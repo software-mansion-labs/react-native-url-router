@@ -13,6 +13,7 @@ import {
   NativeRouter,
   StackNavigator,
   TabNavigator,
+  NavigateIfFocused,
 } from "react-native-url-router";
 import { Route, Navigate } from "react-router";
 
@@ -28,38 +29,38 @@ export default function App() {
           }}
           screensConfig={{
             "/": { title: "" },
-            "/login": { title: "Login" },
+            login: { title: "Login" },
           }}
         >
           <Route
             path="/"
             element={
               loggedIn ? (
-                <Navigate to="/app" replace />
+                <NavigateIfFocused to="/app" replace />
               ) : (
-                <Navigate to="/login" replace />
+                <NavigateIfFocused to="/login" replace />
               )
             }
           />
           <Route
-            path="/login"
+            path="login"
             element={
               <View style={{ padding: 20, backgroundColor: "white", flex: 1 }}>
                 <Text>Login screen</Text>
                 <TextInput value="username" />
                 <TextInput value="password" />
-                {loggedIn && <Navigate to="/app" replace />}
+                {loggedIn && <NavigateIfFocused to="/app" replace />}
                 <Button onPress={() => setLoggedIn(true)} title="Login" />
               </View>
             }
           />
           <Route
-            path="/app"
+            path="app"
             element={
               <View style={{ padding: 20, backgroundColor: "white", flex: 1 }}>
                 <Text>App</Text>
                 <Button onPress={() => setLoggedIn(false)} title="Logout" />
-                {!loggedIn && <Navigate to="/login" replace />}
+                {!loggedIn && <NavigateIfFocused to="/login" replace />}
               </View>
             }
           />

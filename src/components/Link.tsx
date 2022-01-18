@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 
 const Link: FC<
   ({ to: string; back?: undefined } | { back: boolean; to?: undefined }) & {
-    style: ViewStyle;
+    style?: ViewStyle;
   }
 > = ({ children, to, back, style }) => {
   const navigate = useNavigate();

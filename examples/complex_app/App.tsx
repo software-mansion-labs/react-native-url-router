@@ -68,14 +68,14 @@ export default function App() {
                   <Route
                     path="profile"
                     element={
-                      <>
+                      <View style={{ padding: 30 }}>
                         <Text>Profile</Text>
                         <Button
                           onPress={() => setLoggedIn(false)}
                           title="Logout"
                         />
                         {!loggedIn && <Navigate to="/login" replace />}
-                      </>
+                      </View>
                     }
                   />
                 </TabNavigator>

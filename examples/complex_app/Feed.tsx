@@ -26,6 +26,7 @@ const Post = () => {
 export default () => {
   return (
     <StackNavigator
+      defaultScreenConfig={{ stackHeaderConfig: { backgroundColor: "white" } }}
       screensConfig={{ "": { title: "Feed" }, ":id": { title: "Image" } }}
     >
       <Route

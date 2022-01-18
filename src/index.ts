@@ -7,6 +7,6 @@ export { default as TabNavigator } from "./navigators/TabNavigator";
 export { default as StackNavigator } from "./navigators/StackNavigator";
 
 export { default as Link } from "./components/Link";
-export { default as Navigate } from "./components/NavigateIfFocused";
+export { default as NavigateIfFocused } from "./components/NavigateIfFocused";
 
 export { default as UNSAFE_useNativeHistory } from "./history/useNativeHistory";

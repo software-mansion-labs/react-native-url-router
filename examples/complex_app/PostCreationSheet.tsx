@@ -14,7 +14,6 @@ const PostCreationSheet = () => {
   // callbacks
 
   const match = useMatch("/createPost/*");
-  console.log(match);
   useEffect(() => {
     if (match) {
       bottomSheetRef.current?.expand();
@@ -42,7 +41,14 @@ const PostCreationSheet = () => {
         <Link to="/createPost/rich">
           <Text>Richtext</Text>
         </Link>
-        <StackNavigator>
+        <StackNavigator
+          defaultScreenConfig={{
+            stackHeaderConfig: {
+              backgroundColor: "white",
+              topInsetEnabled: false,
+            },
+          }}
+        >
           <Route
             path="createPost"
             element={<Text>Type up your post here</Text>}
