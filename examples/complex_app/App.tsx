@@ -21,7 +21,6 @@ import PostCreationSheet from "./PostCreationSheet";
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(true);
-  console.log({ loggedIn });
   return (
     <View style={styles.container}>
       <NativeRouter>
@@ -83,7 +82,6 @@ export default function App() {
               }
             />
           </StackNavigator>
-          {/* breaks logout */}
           <PostCreationSheet />
         </>
       </NativeRouter>
