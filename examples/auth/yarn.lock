@@ -4419,9 +4419,10 @@ react-native-screens@~3.10.1:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
 
-react-native-url-router@../../react-native-url-router-v0.0.1.tgz:
+react-native-url-router@^0.0.1:
   version "0.0.1"
-  resolved "../../react-native-url-router-v0.0.1.tgz#d42cf94bd04ac155096d17229e3ca820ae513c82"
+  resolved "https://registry.yarnpkg.com/react-native-url-router/-/react-native-url-router-0.0.1.tgz#d806e9349dd30cf46ed775d5164ebd5fb800b249"
+  integrity sha512-5FLHGEEyO62UnFfSrWczJqxPID7JoaMfgwbjjHqEgXx2GkeJBVQByzuAFaLefshIWtDprsajBIoxd7qhEgbfNQ==
   dependencies:
     immer "^9.0.12"
 

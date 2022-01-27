@@ -13,7 +13,7 @@ import {
   NativeRouter,
   StackNavigator,
   TabNavigator,
-  Navigate,
+  NavigateIfFocused,
 } from "react-native-url-router";
 import { Route } from "react-router";
 import Feed from "./Feed";
@@ -35,9 +35,9 @@ export default function App() {
               path="/"
               element={
                 loggedIn ? (
-                  <Navigate to="/app" replace />
+                  <NavigateIfFocused to="/app" replace />
                 ) : (
-                  <Navigate to="/login" replace />
+                  <NavigateIfFocused to="/login" replace />
                 )
               }
             />
@@ -50,7 +50,7 @@ export default function App() {
                   <Text>Login screen</Text>
                   <TextInput value="username" />
                   <TextInput value="password" />
-                  {loggedIn && <Navigate to="/app" replace />}
+                  {loggedIn && <NavigateIfFocused to="/app" replace />}
                   <Button onPress={() => setLoggedIn(true)} title="Login" />
                 </View>
               }
@@ -74,7 +74,7 @@ export default function App() {
                           onPress={() => setLoggedIn(false)}
                           title="Logout"
                         />
-                        {!loggedIn && <Navigate to="/login" replace />}
+                        {!loggedIn && <NavigateIfFocused to="/login" replace />}
                       </View>
                     }
                   />

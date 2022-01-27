@@ -31,8 +31,9 @@ const StackNavigator: FC<
   ComponentProps<typeof Routes> & {
     screensConfig?: ScreensConfig;
     defaultScreenConfig?: ScreenConfig;
+    stackConfig?: ComponentProps<typeof ScreenStack>;
   }
-> = ({ children, screensConfig, defaultScreenConfig }) => {
+> = ({ children, screensConfig, defaultScreenConfig, stackConfig }) => {
   const { getHistoryWithIndexesForPrefix, applyPrefixIndexesToHistory } =
     useNestedHistoryContext();
   const routes = createRoutesFromChildren(children);
@@ -68,7 +69,7 @@ const StackNavigator: FC<
   const filteredMatches = uniqueMatches.filter((r) => !!r.match);
 
   return (
-    <ScreenStack style={{ flex: 1, alignSelf: "stretch" }}>
+    <ScreenStack style={{ flex: 1, alignSelf: "stretch" }} {...stackConfig}>
       {filteredMatches.map((r, idx) => {
         const historyItemForPreviousScreen = uniqueMatches
           .slice(0, idx)
