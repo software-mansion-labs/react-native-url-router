@@ -154,7 +154,94 @@ loggedIn ? (
 );
 ```
 
-## Styling
+## Styling Tabs
+
+Tabs can be styled by providing a `tabsConfig` prop to the TabNavigator.
+
+```tsx
+const mainTabsConfig = {
+  feed: {
+    title: "My feed"
+    icon: ({active, color, size}) => <FeedIcon active={active} color={color} size={size} />
+  },
+  profile: {
+    title: "My profile"
+    icon: ({active, color, size}) => <ProfileIcon active={active} color={color} size={size} />
+  },
+};
+
+<TabNavigator tabsConfig={mainTabsConfig}>
+```
+
+If you need more styling options you can override the BottomTabsComponent according to the API docs.
+Additional props passed in tabConfig will be provided to the custom tabs component.
+Check the [DefaultBottomTabs](https://github.com/software-mansion-labs/react-native-url-router/blob/main/src/components/DefaultBottomTabs.tsx) implementation for details.
+
+```tsx
+const myTabsConfig = {
+  feed: {
+    title: "My feed"
+    rounded: true
+  },
+  profile: {
+    title: "My profile"
+    rounded: false
+  },
+};
+<TabNavigator BottomTabsComponent={MyBottomTabs} tabsConfig={myTabsConfig}>
+```
+
+## Styling the Stack Navigator
+
+Stack Navigator can be styled by providing defaultScreenConfig or screensConfig props. When configuration for a specific path is not provided in the screensConfig under a correct key, the default one is used as fallback. These configurations are shallow merged.
+
+```tsx
+const screensConfig = {
+  feed: {
+    title: "My feed"
+    stackHeaderConfig: { hidden: true },
+    containerStyle: { backgroundColor: "#fff" },
+    stackConfig: { gestureEnabled: false }
+  },
+};
+
+const defaultScreenConfig = { title: "Other screens" }
+
+<StackNavigator screensConfig={screensConfig} defaultScreenConfig={defaultScreenConfig}/>
+```
+
+There's a bit more to explain here.
+
+The `containerStyle` is a regular styles prop passed onto the root container.
+
+The `stackConfig` defines customization options from `react-native-screens` passed onto the native ScreenStack.
+[Read this props list](https://github.com/software-mansion/react-native-screens/blob/main/guides/GUIDE_FOR_LIBRARY_AUTHORS.md#screenstack) for details.
+
+The `stackHeaderConfig` is spread into the [ `<ScreenStackHeaderConfig>`](https://github.com/software-mansion/react-native-screens/blob/main/guides/GUIDE_FOR_LIBRARY_AUTHORS.md#screenstackheaderconfig) from react-native-screens.
+
+On stackHeaderConfig you can define props like `hidden`, `autoFocus` and others.
+
+If you need to fully customize your header, you can provide `stackHeaderConfig.children` to style the special child views like `ScreenStackHeaderCenterView`.
+
+```tsx
+stackHeaderConfig = {
+  children: <>
+    <ScreenStackHeaderCenterView>
+      <CustomCenterText/>
+    <ScreenStackHeaderCenterView/>
+  </>
+}
+```
+
+## What if an opened URL is not found?
+
+Well... Nothing. Screens still remain at their old order, tabs don't switch and you don't see a 404 screen.
+
+This allows us to do nifty stuff like botom modals and side by side views.
+
+As long as the two layers (screens behind the modal and the modal itself) have different URL prefixes (see nested history), it works automagically.
+
+<!-- link -->
 
 <!-- Styling
 Debug url bar
