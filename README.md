@@ -1,5 +1,9 @@
 # React Native Url Router
 
+## [Documentation page](https://software-mansion-labs.github.io/react-native-url-router/docs/overview)
+
+## Motivation
+
 React Native Url Router aims to simplify native navigation patterns.
 
 It allows for native navigation UI that feels natural on mobile together with easy navigation by opening URLs.
@@ -13,7 +17,7 @@ React Router provides the routing logic, route ranking, matching, params support
 React Native Url Router provides a powerful new abstraction over a regular web history stack.
 It also integrates with react-native-screens providing a fully native stack behavior, and relies on react-native-pager-view for swipeable Tabs.
 
-# Usage
+## Usage
 
 ```tsx
 <StackNavigator>
@@ -42,7 +46,7 @@ It also integrates with react-native-screens providing a fully native stack beha
 </StackNavigator>
 ```
 
-# Installation
+## Installation
 
 For expo:
 
@@ -59,14 +63,14 @@ yarn add react-native-url-router react-native-pager-view react-native-screens re
 
 Also follow https://github.com/software-mansion/react-native-screens#installation for android
 
-# Documentation
+## Documentation
 
-Coming soon
+https://software-mansion-labs.github.io/react-native-url-router/docs/overview
 
-# Examples
+## Examples
 
 Check out `examples/` for a quick start into using react-native-url-router in your own project.
 
-# License
+## License
 
 React Native Url Router library is licensed under The MIT License.
