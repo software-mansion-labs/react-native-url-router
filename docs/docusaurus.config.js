@@ -10,7 +10,7 @@ const config = {
   tagline: "URL based navigation for native",
   url: "https://your-docusaurus-test-site.com",
   clientModules: [require.resolve("./snackPlayerInitializer.js")],
-  baseUrl: "/",
+  baseUrl: "/react-native-url-router/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.ico",
@@ -47,10 +47,10 @@ const config = {
     ({
       navbar: {
         title: "React Native Url Router",
-        logo: {
-          alt: "My Site Logo",
-          src: "img/logo.svg",
-        },
+        // logo: {
+        //   alt: "My Site Logo",
+        //   src: "img/logo.svg",
+        // },
         items: [
           {
             type: "doc",
@@ -80,30 +80,34 @@ const config = {
           {
             title: "Community",
             items: [
+              // {
+              //   label: "Stack Overflow",
+              //   href: "https://stackoverflow.com/questions/tagged/docusaurus",
+              // },
+              // {
+              //   label: "Discord",
+              //   href: "https://discordapp.com/invite/docusaurus",
+              // },
               {
-                label: "Stack Overflow",
-                href: "https://stackoverflow.com/questions/tagged/docusaurus",
+                label: "Twitter - swmansion",
+                href: "https://twitter.com/swmansion",
               },
               {
-                label: "Discord",
-                href: "https://discordapp.com/invite/docusaurus",
-              },
-              {
-                label: "Twitter",
-                href: "https://twitter.com/docusaurus",
+                label: "Twitter - aleqsio",
+                href: "https://twitter.com/aleqsio",
               },
             ],
           },
           {
             title: "More",
             items: [
-              {
-                label: "Blog",
-                to: "/blog",
-              },
+              // {
+              //   label: "Blog",
+              //   to: "/blog",
+              // },
               {
                 label: "GitHub",
-                href: "https://github.com/facebook/docusaurus",
+                href: "https://github.com/software-mansion-labs/react-native-url-router",
               },
             ],
           },
