@@ -10,3 +10,8 @@ export { default as Link } from "./components/Link";
 export { default as NavigateIfFocused } from "./components/NavigateIfFocused";
 
 export { default as UNSAFE_useNativeHistory } from "./history/useNativeHistory";
+
+export {
+  useSearchParams,
+  SearchParamsContext as UNSAFE_SearchParamsContext,
+} from "./contexts/SearchParamsContext";

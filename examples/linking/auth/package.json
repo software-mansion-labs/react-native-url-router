@@ -17,7 +17,7 @@
     "react-native": "0.64.3",
     "react-native-pager-view": "^5.4.9",
     "react-native-screens": "~3.10.1",
-    "react-native-url-router": "0.0.4",
+    "react-native-url-router": "^0.0.1",
     "react-native-web": "0.17.1",
     "react-router": "^6.2.1"
   },

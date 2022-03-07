@@ -74,7 +74,9 @@ const NativeRouter: FC = ({ children }) => {
           },
           push: (pushUrl: To) => {
             push(
-              typeof pushUrl === "string" ? pushUrl : pushUrl.pathname || ""
+              typeof pushUrl === "string"
+                ? pushUrl
+                : pushUrl.pathname + pushUrl.search || ""
             );
           },
           replace: (replaceUrl: To) => {

@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import PagerView from "react-native-pager-view";
 import {
   createRoutesFromChildren,
@@ -15,6 +15,7 @@ import {
   UNSAFE_RouteContext,
   useNavigate,
 } from "react-router";
+// import { Freeze } from "react-freeze";
 import { useNestedHistoryContext } from "../routers/NativeRouter";
 import {
   combineUrlSegments,
@@ -24,6 +25,7 @@ import {
 } from "../utils";
 import DefaultBottomTabs from "../components/DefaultBottomTabs";
 import { FocusContext } from "../contexts/FocusContext";
+import { SearchParamsContext } from "../contexts/SearchParamsContext";
 
 export type TabConfig<AdditionalTabConfig = Record<string, unknown>> = {
   title?: string;
@@ -65,14 +67,15 @@ function TabNavigator({
     parentPathnameBase.replace(/(\/|\*)*$/g, "")
   );
   const tabHistory = getHistoryForPrefix(basenamePrefix);
+  const url = prependSlash(
+    (last(tabHistory) || "").slice(basenamePrefix.length) || "/"
+  );
   const currentTabIndex = Math.max(
     0,
     routes.findIndex((r) =>
       last(
         matchRoutes([r], {
-          pathname: prependSlash(
-            (last(tabHistory) || "").slice(basenamePrefix.length) || "/"
-          ),
+          pathname: url.split("?")[0],
         }) || []
       )
     )
@@ -102,6 +105,7 @@ function TabNavigator({
         key={routes.map((r) => r.path).join("-")}
         initialPage={currentTabIndex}
         onPageSelected={(event) => {
+          if (event.nativeEvent.position === currentTabIndex) return;
           const route = routes[event.nativeEvent.position];
           navigate(route.path || "/");
         }}
@@ -124,6 +128,11 @@ function TabNavigator({
             );
           }
           return (
+            // <Freeze
+            //   freeze={!(isParentFocused && idx === currentTabIndex)}
+            //   // eslint-disable-next-line react/no-array-index-key
+            //   key={`${match.pathname}-${idx}`}
+            // >
             <View
               style={{
                 width: "100%",
@@ -146,10 +155,25 @@ function TabNavigator({
                     isFocused: isParentFocused && idx === currentTabIndex,
                   }}
                 >
-                  {match.route.element}
+                  <SearchParamsContext.Provider
+                    // eslint-disable-next-line react/jsx-no-constructed-context-values
+                    value={Object.fromEntries(
+                      url
+                        .split("?")?.[1]
+                        ?.split("&")
+                        .map((p) => {
+                          const [k, v] = p.split("=");
+                          return [k, v];
+                        }) || []
+                    )}
+                  >
+                    {match.route.element}
+                    <Text>{url}</Text>
+                  </SearchParamsContext.Provider>
                 </FocusContext.Provider>
               </UNSAFE_RouteContext.Provider>
             </View>
+            // </Freeze>
           );
         })}
       </PagerView>

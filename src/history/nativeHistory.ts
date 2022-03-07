@@ -51,9 +51,9 @@ const reccurentGetUrlFromHistory = (
     );
     return "";
   }
-  if (segment === "$") {
+  if (segment.startsWith("$")) {
     // we are at a $ point, so the current URL ends at this segment.
-    return "";
+    return segment.slice(1);
   }
   const nextPrefix = combineUrlSegments(pathPrefix, segment);
   return combineUrlSegments(
@@ -84,8 +84,8 @@ export const getHistoryForPrefix = (
   const successorHistory = root.segments
     .slice(0, root.index + 1)
     .flatMap((segment) =>
-      segment === "$"
-        ? [prefix]
+      segment.startsWith("$")
+        ? [prefix + segment.slice(1)]
         : getHistoryForPrefix(history, combineUrlSegments(prefix, segment))
     );
   return successorHistory;
@@ -106,10 +106,10 @@ export const getHistoryWithIndexesForPrefix = (
   const successorHistory = root.segments
     .slice(0, root.index + 1)
     .flatMap((segment, idx) =>
-      segment === "$"
+      segment.startsWith("$")
         ? [
             {
-              url: prefix,
+              url: prefix + segment.slice(1),
               prefixIndexes: {
                 ...parentPrefixIndexes,
                 [prefix]: idx,
@@ -163,15 +163,15 @@ const removeUnreachablePaths = ({ prefixes, ...rest }: NestedHistory) => {
     ...rest,
   };
 };
-
 export const pushUrlToHistory = (
   history: NestedHistory,
   url: string,
   replace = false
 ) => {
-  guard("pushUrlToHistory", url, replace);
+  const [pathUrl, queryParams] = url.split("?");
+  console.log("pushUrlToHistory", pathUrl, queryParams);
   const newUrlSegments = [
-    ...url
+    ...pathUrl
       .replace(/(\*|\/)$/, "")
       .split("/")
       .filter((f) => !!f), // url contains empty string, fix!
@@ -203,16 +203,30 @@ export const pushUrlToHistory = (
           draft.prefixes[prefix].index =
             draft.prefixes[prefix].segments.length - 1;
         }
-      } else if (
-        !url.endsWith("*") &&
-        draft.prefixes[prefix].segments[draft.prefixes[prefix].index] !== "$"
-      ) {
-        draft.prefixes[prefix].segments = ["$"];
+        // you cant have a URL with a star and query params (or can you?)
+        // they could override the query params of the leaf, but then you don't know where the QP will end up
+      } else if (!url.endsWith("*")) {
+        draft.prefixes[prefix].segments = [
+          queryParams ? `$?${queryParams}` : "$",
+        ];
         draft.prefixes[prefix].index = 0;
       } else if (draft.prefixes[prefix].index === -1) {
-        draft.prefixes[prefix].segments = ["$"];
-        draft.prefixes[prefix].index += 1;
+        draft.prefixes[prefix].segments = [
+          queryParams ? `$?${queryParams}` : "$",
+        ];
+        draft.prefixes[prefix].index = 0;
       }
+      //  pretty sure we want nostar links to reset the history of the node
+      //  else if (
+      //   !url.endsWith("*") &&
+      //   draft.prefixes[prefix].segments[draft.prefixes[prefix].index] !== "$"
+      // ) {
+      //   draft.prefixes[prefix].segments = ["$"];
+      //   draft.prefixes[prefix].index = 0;
+      // } else if (draft.prefixes[prefix].index === -1) {
+      //   draft.prefixes[prefix].segments = ["$"];
+      //   draft.prefixes[prefix].index += 1;
+      // }
     });
   });
   return removeUnreachablePaths(newHistory);

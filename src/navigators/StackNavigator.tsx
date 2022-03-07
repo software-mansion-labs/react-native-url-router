@@ -16,6 +16,7 @@ import { last, prependSlash, uniqueBy } from "../utils";
 import { useNestedHistoryContext } from "../routers/NativeRouter";
 import { PrefixIndexes } from "../history/nativeHistory";
 import { FocusContext } from "../contexts/FocusContext";
+import { SearchParamsContext } from "../contexts/SearchParamsContext";
 
 export type ScreenConfig = {
   title?: string;
@@ -49,18 +50,20 @@ const StackNavigator: FC<
     historyWithPrefixes.length > 0
       ? historyWithPrefixes
       : [{ url: "/", prefixIndexes: {} as PrefixIndexes }]
-  ).map((historyItem) => ({
-    match: last(
-      // TODO: performance can be increased by adding a limit to getHistoryWithIndexesForPrefix to only get
-      // into N levels of segments where N = max number of segments of any route segment
-      matchRoutes(routes, {
-        pathname: prependSlash(
-          historyItem.url.slice(basenamePrefix.length) || "/"
-        ),
-      }) || []
-    ),
-    ...historyItem,
-  }));
+  ).map((historyItem) => {
+    const url = prependSlash(
+      historyItem.url.slice(basenamePrefix.length) || "/"
+    );
+    return {
+      match: last(
+        // TODO: performance can be increased by adding a limit to getHistoryWithIndexesForPrefix to only get
+        // into N levels of segments where N = max number of segments of any route segment
+        matchRoutes(routes, url) || []
+      ),
+      url2: url,
+      ...historyItem,
+    };
+  });
   const uniqueMatches = uniqueBy(
     flattenedMatches.filter((m) => !!m.match?.pathnameBase),
     (m) => m.match?.pathnameBase
@@ -115,7 +118,20 @@ const StackNavigator: FC<
                       isParentFocused && idx === filteredMatches.length - 1,
                   }}
                 >
-                  {r.match.route.element}
+                  <SearchParamsContext.Provider
+                    // eslint-disable-next-line react/jsx-no-constructed-context-values
+                    value={Object.fromEntries(
+                      r.url
+                        .split("?")?.[1]
+                        ?.split("&")
+                        .map((p) => {
+                          const [k, v] = p.split("=");
+                          return [k, v];
+                        }) || []
+                    )}
+                  >
+                    {r.match.route.element}
+                  </SearchParamsContext.Provider>
                 </FocusContext.Provider>
               </UNSAFE_RouteContext.Provider>
             </SafeAreaView>
