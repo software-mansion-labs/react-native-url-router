@@ -168,7 +168,6 @@ function TabNavigator({
                     )}
                   >
                     {match.route.element}
-                    <Text>{url}</Text>
                   </SearchParamsContext.Provider>
                 </FocusContext.Provider>
               </UNSAFE_RouteContext.Provider>
