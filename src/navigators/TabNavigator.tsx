@@ -62,6 +62,8 @@ function TabNavigator({
   const { matches: parentMatches } = useContext(UNSAFE_RouteContext);
   const navigate = useNavigate();
   const routeMatch = parentMatches[parentMatches.length - 1];
+  const parentParams = routeMatch ? routeMatch.params : {};
+
   const parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
   const basenamePrefix = prependSlash(
     parentPathnameBase.replace(/(\/|\*)*$/g, "")
@@ -111,11 +113,11 @@ function TabNavigator({
         }}
       >
         {routes.map((route, idx) => {
-          const match = last(
+          const allMatches =
             matchRoutes(routes, {
               pathname: prependSlash(route.path || "/"),
-            }) || []
-          );
+            }) || [];
+          const match = last(allMatches);
           if (!match) {
             return (
               <View
@@ -145,7 +147,23 @@ function TabNavigator({
                 // figure out how to get the memoing to work
                 // eslint-disable-next-line react/jsx-no-constructed-context-values
                 value={{
-                  matches: parentMatches.concat(match),
+                  matches: parentMatches.concat(
+                    allMatches.map((m) => ({
+                      ...m,
+                      params: { ...parentParams, ...m.params },
+                      pathname: combineUrlSegments(
+                        parentPathnameBase,
+                        m.pathname
+                      ),
+                      pathnameBase:
+                        m.pathnameBase === "/"
+                          ? parentPathnameBase
+                          : combineUrlSegments(
+                              parentPathnameBase,
+                              m.pathnameBase
+                            ),
+                    }))
+                  ),
                   outlet: null,
                 }}
               >
