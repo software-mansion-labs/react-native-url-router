@@ -12,7 +12,7 @@ import {
   ScreenStackHeaderConfig,
 } from "react-native-screens";
 import { SafeAreaView, ViewStyle } from "react-native";
-import { last, prependSlash, uniqueBy } from "../utils";
+import { combineUrlSegments, last, prependSlash, uniqueBy } from "../utils";
 import { useNestedHistoryContext } from "../routers/NativeRouter";
 import { PrefixIndexes } from "../history/nativeHistory";
 import { FocusContext } from "../contexts/FocusContext";
@@ -41,10 +41,13 @@ const StackNavigator: FC<
   const { isFocused: isParentFocused } = useContext(FocusContext);
 
   const { matches: parentMatches } = useContext(UNSAFE_RouteContext);
+  const routeMatch = parentMatches[parentMatches.length - 1];
+  const parentParams = routeMatch ? routeMatch.params : {};
+
+  const parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
+  const basenamePrefix = prependSlash(parentPathnameBase);
+  // .replace(/(\/|\*)*$/g, "")
   // const parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
-  const basenamePrefix = prependSlash(
-    parentMatches.map((pm) => pm.pathname.replace(/(\/|\*)*$/g, "")).join("")
-  );
   const historyWithPrefixes = getHistoryWithIndexesForPrefix(basenamePrefix);
   const flattenedMatches = (
     historyWithPrefixes.length > 0
@@ -60,6 +63,7 @@ const StackNavigator: FC<
         // into N levels of segments where N = max number of segments of any route segment
         matchRoutes(routes, url) || []
       ),
+      allMatches: matchRoutes(routes, url) || [],
       url2: url,
       ...historyItem,
     };
@@ -107,7 +111,23 @@ const StackNavigator: FC<
                 // figure out what to do with this
                 // eslint-disable-next-line react/jsx-no-constructed-context-values
                 value={{
-                  matches: parentMatches.concat(r.match),
+                  matches: parentMatches.concat(
+                    r.allMatches.map((match) => ({
+                      ...match,
+                      params: { ...parentParams, ...match.params },
+                      pathname: combineUrlSegments(
+                        parentPathnameBase,
+                        match.pathname
+                      ),
+                      pathnameBase:
+                        match.pathnameBase === "/"
+                          ? parentPathnameBase
+                          : combineUrlSegments(
+                              parentPathnameBase,
+                              match.pathnameBase
+                            ),
+                    }))
+                  ),
                   outlet: null,
                 }}
               >
