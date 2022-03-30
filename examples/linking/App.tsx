@@ -1,14 +1,14 @@
 import { useState } from "react";
 
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Button, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import {
   NativeRouter,
   StackNavigator,
   TabNavigator,
   useSearchParams,
 } from "react-native-url-router";
-import { Route, useNavigate } from "react-router";
+import { Route, useLocation, useNavigate } from "react-router";
 import React from "react";
 import * as Linking from "expo-linking";
 import { useEffect } from "react";
@@ -37,10 +37,26 @@ const LinkingHandler = () => {
 };
 
 const Feed = () => {
-  const params = useSearchParams();
+  const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <SafeAreaView>
-      <Text>Feed {JSON.stringify(params)}</Text>
+      <Text>Feed</Text>
+      <Text>Params {params}</Text>
+      <Text>State {JSON.stringify(location.state)}</Text>
+      <Button
+        title="SET PARAMS"
+        onPress={() => {
+          setParams({ hello: "you nice person" });
+        }}
+      />
+      <Button
+        title="SET STATE"
+        onPress={() => {
+          navigate(location, { state: { test: 2 } });
+        }}
+      />
     </SafeAreaView>
   );
 };

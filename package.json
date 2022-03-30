@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "immer": "^9.0.12",
-    "typedoc": "^0.22.11"
+    "typedoc": "^0.22.11",
+    "@ungap/url-search-params": "^0.2.2"
   }
 }

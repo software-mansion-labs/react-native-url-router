@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import {
-  getCurrentUrlFromHistory,
-  pushUrlToHistory,
+  getLocationFromHistory,
+  pushLocationToHistory,
   NestedHistory,
   getHistoryForPrefix,
   go,
@@ -12,11 +12,18 @@ import {
 
 const useNestedHistory = () => {
   const [history, setHistory] = useState<NestedHistory>({
-    prefixes: {
-      "/": { index: 0, segments: ["$"] },
+    segments: {
+      "/": {
+        index: 0,
+        segments: [
+          { hash: "", search: "", type: "leaf", key: "default", state: {} },
+        ],
+      },
     },
   });
-  const url = useMemo(() => getCurrentUrlFromHistory(history), [history]);
+  const location = useMemo(() => getLocationFromHistory(history), [history]);
+  console.log({ history, location });
+
   const attemptGo = (config?: {
     onPath?: string;
     direction?: "forward" | "back";
@@ -28,12 +35,12 @@ const useNestedHistory = () => {
   };
 
   return {
-    url,
+    location,
     history,
-    push: (pushUrl: string) =>
-      setHistory((h) => pushUrlToHistory(h, pushUrl, false)),
-    replace: (replaceUrl: string) =>
-      setHistory((h) => pushUrlToHistory(h, replaceUrl, true)),
+    push: (to: Location, state: object) =>
+      setHistory((h) => pushLocationToHistory(h, to, false, state)),
+    replace: (to: Location, state: object) =>
+      setHistory((h) => pushLocationToHistory(h, to, true, state)),
     go: attemptGo,
     getHistoryForPrefix: (prefix: string) =>
       getHistoryForPrefix(history, prefix),

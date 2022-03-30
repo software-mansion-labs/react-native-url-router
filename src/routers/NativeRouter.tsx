@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import React, { FC, useContext, useMemo } from "react";
 import { BackHandler } from "react-native";
-import { Router, To } from "react-router";
+import { Location, Router } from "react-router";
 import {
   GoConfig,
   NestedHistory,
@@ -13,13 +13,28 @@ import useNativeHistory from "../history/useNativeHistory";
 const NativeRouterContext = React.createContext<{
   history: NestedHistory;
   go: (config?: GoConfig) => void;
-  getHistoryForPrefix: (prefix: string) => string[];
+  getHistoryForPrefix: (prefix: string) => Location[];
   applyPrefixIndexesToHistory: (prefixIndexes: PrefixIndexes) => void;
   getHistoryWithIndexesForPrefix: (
     prefix: string
-  ) => { url: string; prefixIndexes: PrefixIndexes }[];
+  ) => { location: Location; prefixIndexes: PrefixIndexes }[];
 }>({
-  history: { prefixes: { "/": { index: 0, segments: ["$"] } } },
+  history: {
+    segments: {
+      "/": {
+        index: 0,
+        segments: [
+          {
+            hash: "",
+            search: "",
+            type: "leaf",
+            key: "default",
+            state: {},
+          },
+        ],
+      },
+    },
+  },
   go: () => {}, // deprecated, use go from router instead
   getHistoryForPrefix: () => [],
   getHistoryWithIndexesForPrefix: () => [],
@@ -30,7 +45,7 @@ export const useNestedHistoryContext = () => useContext(NativeRouterContext);
 
 const NativeRouter: FC = ({ children }) => {
   const {
-    url,
+    location,
     go,
     push,
     replace,
@@ -64,7 +79,7 @@ const NativeRouter: FC = ({ children }) => {
   return (
     <NativeRouterContext.Provider value={contextValue}>
       <Router
-        location={url}
+        location={location}
         navigator={{
           go: (delta: number) => {
             go({
@@ -72,20 +87,8 @@ const NativeRouter: FC = ({ children }) => {
               direction: delta < 0 ? "back" : "forward",
             });
           },
-          push: (pushUrl: To) => {
-            push(
-              typeof pushUrl === "string"
-                ? pushUrl
-                : pushUrl.pathname + pushUrl.search || ""
-            );
-          },
-          replace: (replaceUrl: To) => {
-            replace(
-              typeof replaceUrl === "string"
-                ? replaceUrl
-                : replaceUrl.pathname || ""
-            );
-          },
+          push,
+          replace,
           createHref: () => {
             // eslint-disable-next-line no-console
             console.warn("not supported yet");

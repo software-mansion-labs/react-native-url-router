@@ -1,10 +1,10 @@
-import React, { ComponentProps, FC, ReactNode, useContext } from "react";
+import React, { ComponentProps, FC, useContext } from "react";
 import {
   createRoutesFromChildren,
   matchRoutes,
   Routes,
   UNSAFE_RouteContext,
-  UNSAFE_LocationContext,
+  Location,
 } from "react-router";
 import {
   Screen,
@@ -16,7 +16,6 @@ import { combineUrlSegments, last, prependSlash, uniqueBy } from "../utils";
 import { useNestedHistoryContext } from "../routers/NativeRouter";
 import { PrefixIndexes } from "../history/nativeHistory";
 import { FocusContext } from "../contexts/FocusContext";
-import { SearchParamsContext } from "../contexts/SearchParamsContext";
 
 export type ScreenConfig = {
   title?: string;
@@ -52,11 +51,17 @@ const StackNavigator: FC<
   const flattenedMatches = (
     historyWithPrefixes.length > 0
       ? historyWithPrefixes
-      : [{ url: "/", prefixIndexes: {} as PrefixIndexes }]
+      : [
+          {
+            location: { pathname: "/" } as Location,
+            prefixIndexes: {} as PrefixIndexes,
+          },
+        ]
   ).map((historyItem) => {
     const url = prependSlash(
-      historyItem.url.slice(basenamePrefix.length) || "/"
+      historyItem.location.pathname.slice(basenamePrefix.length) || "/"
     );
+
     return {
       match: last(
         // TODO: performance can be increased by adding a limit to getHistoryWithIndexesForPrefix to only get
@@ -64,7 +69,6 @@ const StackNavigator: FC<
         matchRoutes(routes, url) || []
       ),
       allMatches: matchRoutes(routes, url) || [],
-      url2: url,
       ...historyItem,
     };
   });
@@ -72,9 +76,9 @@ const StackNavigator: FC<
     flattenedMatches.filter((m) => !!m.match?.pathnameBase),
     (m) => m.match?.pathnameBase
   );
+
   if (uniqueMatches.length === 0) return null;
   const filteredMatches = uniqueMatches.filter((r) => !!r.match);
-
   return (
     <ScreenStack style={{ flex: 1, alignSelf: "stretch" }} {...stackConfig}>
       {filteredMatches.map((r, idx) => {
@@ -138,20 +142,7 @@ const StackNavigator: FC<
                       isParentFocused && idx === filteredMatches.length - 1,
                   }}
                 >
-                  <SearchParamsContext.Provider
-                    // eslint-disable-next-line react/jsx-no-constructed-context-values
-                    value={Object.fromEntries(
-                      r.url
-                        .split("?")?.[1]
-                        ?.split("&")
-                        .map((p) => {
-                          const [k, v] = p.split("=");
-                          return [k, v];
-                        }) || []
-                    )}
-                  >
-                    {r.match.route.element}
-                  </SearchParamsContext.Provider>
+                  {r.match.route.element}
                 </FocusContext.Provider>
               </UNSAFE_RouteContext.Provider>
             </SafeAreaView>

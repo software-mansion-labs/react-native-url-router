@@ -25,7 +25,6 @@ import {
 } from "../utils";
 import DefaultBottomTabs from "../components/DefaultBottomTabs";
 import { FocusContext } from "../contexts/FocusContext";
-import { SearchParamsContext } from "../contexts/SearchParamsContext";
 
 export type TabConfig<AdditionalTabConfig = Record<string, unknown>> = {
   title?: string;
@@ -70,7 +69,7 @@ function TabNavigator({
   );
   const tabHistory = getHistoryForPrefix(basenamePrefix);
   const url = prependSlash(
-    (last(tabHistory) || "").slice(basenamePrefix.length) || "/"
+    (last(tabHistory)?.pathname || "").slice(basenamePrefix.length) || "/"
   );
   const currentTabIndex = Math.max(
     0,
@@ -173,20 +172,7 @@ function TabNavigator({
                     isFocused: isParentFocused && idx === currentTabIndex,
                   }}
                 >
-                  <SearchParamsContext.Provider
-                    // eslint-disable-next-line react/jsx-no-constructed-context-values
-                    value={Object.fromEntries(
-                      url
-                        .split("?")?.[1]
-                        ?.split("&")
-                        .map((p) => {
-                          const [k, v] = p.split("=");
-                          return [k, v];
-                        }) || []
-                    )}
-                  >
-                    {match.route.element}
-                  </SearchParamsContext.Provider>
+                  {match.route.element}
                 </FocusContext.Provider>
               </UNSAFE_RouteContext.Provider>
             </View>
