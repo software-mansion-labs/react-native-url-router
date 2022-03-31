@@ -11,7 +11,4 @@ export { default as NavigateIfFocused } from "./components/NavigateIfFocused";
 
 export { default as UNSAFE_useNativeHistory } from "./history/useNativeHistory";
 
-export {
-  useSearchParams,
-  SearchParamsContext as UNSAFE_SearchParamsContext,
-} from "./contexts/SearchParamsContext";
+export { useSearchParams } from "./contexts/useSearchParams";

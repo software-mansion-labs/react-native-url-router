@@ -1,14 +1,31 @@
 /* eslint-disable no-console */
 import produce from "immer";
-import { combineUrlSegments } from "../utils";
+import { Location, To } from "react-router";
+import { combineUrlSegments, prependSlash } from "../utils";
 
-export type PrefixHistory = {
-  index: number;
-  segments: string[];
+// Segments are delimited by "/"
+
+// A segment that ends a url - "5" in "/feed/photo/5"
+// Pathname can be reconstructed from location in tree and is omited
+export type LeafSegment = Omit<Location, "pathname"> & {
+  type: "leaf";
 };
 
+// A segment that is inside a url - "feed" or "photo" in "/feed/photo/5"
+export type BranchSegment = { type: "branch"; pathnamePart: string };
+
+export type Segment = LeafSegment | BranchSegment;
+
+export type HistoryForPrefix = {
+  index: number; // the current navigated to is the segment at position index
+  segments: Segment[];
+};
+
+// For URL "/feed/photo/5" it can be either "/" or "/feed" or "/feed/photo"
+export type Prefix = string;
+
 export type NestedHistory = {
-  prefixes: { [prefix: string]: PrefixHistory; "/": PrefixHistory };
+  segments: { [prefix: Prefix]: HistoryForPrefix; "/": HistoryForPrefix };
 };
 
 let count = 0;
@@ -32,39 +49,50 @@ const guard = (op: string, ...log: any) => {
   return true;
 };
 
-const reccurentGetUrlFromHistory = (
+const reccurentGetLocationFromHistory = (
   history: NestedHistory,
   pathPrefix = "/"
-): string => {
-  if (guard("reccurentGetUrlFromHistory", pathPrefix)) return "";
-  const nextPrefixObject = history.prefixes[pathPrefix];
+): Location | null => {
+  if (guard("reccurentGetUrlFromHistory", pathPrefix)) return null;
+  const nextPrefixObject = history.segments[pathPrefix];
   if (!nextPrefixObject) {
     console.warn(`prefix not found in nested history for path ${pathPrefix}`);
-    return "";
+    return null;
   }
-  const segment = history.prefixes[pathPrefix].segments[nextPrefixObject.index];
+  const segment = history.segments[pathPrefix].segments[nextPrefixObject.index];
   if (!segment) {
     console.warn(
       "prefix index does not point at a correct segment of history",
       pathPrefix,
       nextPrefixObject.index
     );
-    return "";
+    return null;
   }
-  if (segment.startsWith("$")) {
-    // we are at a $ point, so the current URL ends at this segment.
-    return segment.slice(1);
+  if (segment.type === "leaf") {
+    // we are at a feaf point, so the current URL ends at this segment.
+    return { ...segment, pathname: "" };
   }
-  const nextPrefix = combineUrlSegments(pathPrefix, segment);
-  return combineUrlSegments(
-    segment,
-    reccurentGetUrlFromHistory(history, nextPrefix)
-  );
+  const nextPrefix = combineUrlSegments(pathPrefix, segment.pathnamePart);
+  const followingSegment = reccurentGetLocationFromHistory(history, nextPrefix);
+  return {
+    ...followingSegment,
+    pathname: prependSlash(
+      combineUrlSegments(segment.pathnamePart, followingSegment.pathname)
+    ),
+  };
 };
 
-export const getCurrentUrlFromHistory = (history: NestedHistory) => {
-  const url = combineUrlSegments("/", reccurentGetUrlFromHistory(history));
-  return url;
+// export const getCurrentUrlFromHistory = (history: NestedHistory) => {
+//   const url = combineUrlSegments(
+//     "/",
+//     reccurentGetUrlFromHistory(history).pathname
+//   );
+//   return url;
+// };
+
+export const getLocationFromHistory = (history: NestedHistory) => {
+  // QUESTION: we might need to prepend "/"
+  return reccurentGetLocationFromHistory(history);
 };
 
 export type GoConfig = {
@@ -76,17 +104,20 @@ export type GoConfig = {
 export const getHistoryForPrefix = (
   history: NestedHistory,
   prefix: string
-): string[] => {
-  const root = history.prefixes[prefix];
+): Location[] => {
+  const root = history.segments[prefix];
   if (guard("getHistoryForPrefix", prefix)) return [];
 
   if (!root) return [];
   const successorHistory = root.segments
     .slice(0, root.index + 1)
     .flatMap((segment) =>
-      segment.startsWith("$")
-        ? [prefix + segment.slice(1)]
-        : getHistoryForPrefix(history, combineUrlSegments(prefix, segment))
+      segment.type === "leaf"
+        ? [{ ...segment, pathname: prefix }]
+        : getHistoryForPrefix(
+            history,
+            combineUrlSegments(prefix, segment.pathnamePart)
+          )
     );
   return successorHistory;
 };
@@ -97,19 +128,19 @@ export const getHistoryWithIndexesForPrefix = (
   history: NestedHistory,
   prefix: string,
   parentPrefixIndexes: PrefixIndexes
-): { url: string; prefixIndexes: PrefixIndexes }[] => {
+): { location: Location; prefixIndexes: PrefixIndexes }[] => {
   if (guard("getHistoryWithIndexesForPrefix", prefix)) return [];
 
-  const root = history.prefixes[prefix];
+  const root = history.segments[prefix];
 
   if (!root) return [];
   const successorHistory = root.segments
     .slice(0, root.index + 1)
     .flatMap((segment, idx) =>
-      segment.startsWith("$")
+      segment.type === "leaf"
         ? [
             {
-              url: prefix + segment.slice(1),
+              location: { ...segment, pathname: prefix },
               prefixIndexes: {
                 ...parentPrefixIndexes,
                 [prefix]: idx,
@@ -118,7 +149,7 @@ export const getHistoryWithIndexesForPrefix = (
           ]
         : getHistoryWithIndexesForPrefix(
             history,
-            combineUrlSegments(prefix, segment),
+            combineUrlSegments(prefix, segment.pathnamePart),
             {
               ...parentPrefixIndexes,
               [prefix]: idx,
@@ -134,7 +165,7 @@ export const applyPrefixIndexesToHistory = (
 ) => {
   const newHistory = produce(history, (draft) => {
     Object.keys(prefixIndexes).forEach((prefix) => {
-      draft.prefixes[prefix].index = prefixIndexes[prefix];
+      draft.segments[prefix].index = prefixIndexes[prefix];
     });
   });
   return newHistory;
@@ -144,34 +175,44 @@ const getAccessibleKeys = (history: NestedHistory, prefix = "/"): string[] => {
   if (guard("getAccessibleKeys", prefix)) return [];
   return [
     prefix,
-    ...(history.prefixes[prefix] || { segments: [] }).segments.flatMap(
-      (segment) =>
-        getAccessibleKeys(history, combineUrlSegments(prefix, segment))
+    ...(history.segments[prefix] || { segments: [] }).segments.flatMap(
+      (segment: Segment) =>
+        segment.type === "branch"
+          ? getAccessibleKeys(
+              history,
+              combineUrlSegments(prefix, segment.pathnamePart)
+            )
+          : []
     ),
   ];
 };
 
-const removeUnreachablePaths = ({ prefixes, ...rest }: NestedHistory) => {
-  const accessibleKeys = getAccessibleKeys({ prefixes });
+function createKey() {
+  return Math.random().toString(36).substr(2, 8);
+}
+
+const removeUnreachablePaths = ({ segments, ...rest }: NestedHistory) => {
+  const accessibleKeys = getAccessibleKeys({ segments });
   return {
-    prefixes: {
-      "/": prefixes["/"],
+    segments: {
+      "/": segments["/"],
       ...Object.fromEntries(
-        accessibleKeys.map((k) => [k, prefixes[k]]).filter((f) => !!f[1])
+        accessibleKeys.map((k) => [k, segments[k]]).filter((f) => !!f[1])
       ),
     },
     ...rest,
   };
 };
-export const pushUrlToHistory = (
+export const pushLocationToHistory = (
   history: NestedHistory,
-  url: string,
-  replace = false
+  location: To,
+  replace = false,
+  state = null
 ) => {
-  const [pathUrl, queryParams] = url.split("?");
-  console.log("pushUrlToHistory", pathUrl, queryParams);
+  const { pathname, ...leafSegment } =
+    typeof location === "string" ? { pathname: location } : location;
   const newUrlSegments = [
-    ...pathUrl
+    ...pathname
       .replace(/(\*|\/)$/, "")
       .split("/")
       .filter((f) => !!f), // url contains empty string, fix!
@@ -182,56 +223,78 @@ export const pushUrlToHistory = (
         "/",
         ...newUrlSegments.slice(0, newUrlSegmentIndex)
       );
-      if (!draft.prefixes[prefix]) {
-        draft.prefixes[prefix] = {
+      if (!draft.segments[prefix]) {
+        draft.segments[prefix] = {
           index: -1,
           segments: [],
         };
       }
+      const currentSegment =
+        draft.segments[prefix].segments[draft.segments[prefix].index];
       if (newSegment) {
         if (
-          draft.prefixes[prefix].segments[draft.prefixes[prefix].index] !==
-          newSegment
+          !currentSegment ||
+          currentSegment.type !== "branch" ||
+          currentSegment.pathnamePart !== newSegment
         ) {
-          draft.prefixes[prefix].segments = [
-            ...draft.prefixes[prefix].segments.slice(
+          draft.segments[prefix].segments = [
+            ...draft.segments[prefix].segments.slice(
               0,
-              draft.prefixes[prefix].index + (replace ? 0 : 1)
+              draft.segments[prefix].index + (replace ? 0 : 1)
             ),
-            newSegment,
+            {
+              pathnamePart: newSegment,
+              type: "branch",
+            },
           ];
-          draft.prefixes[prefix].index =
-            draft.prefixes[prefix].segments.length - 1;
+          draft.segments[prefix].index =
+            draft.segments[prefix].segments.length - 1;
         }
-        // you cant have a URL with a star and query params (or can you?)
-        // they could override the query params of the leaf, but then you don't know where the QP will end up
-      } else if (!url.endsWith("*")) {
-        draft.prefixes[prefix].segments = [
-          queryParams ? `$?${queryParams}` : "$",
+        // this is the final segment
+      } else if (!pathname.endsWith("*")) {
+        if (
+          currentSegment.type !== "leaf" ||
+          // states are always considered different
+          (!currentSegment.state && !!state) ||
+          (!!currentSegment.state && !state) ||
+          (!!currentSegment.state && !!state) ||
+          currentSegment.search !== (leafSegment.search || "") ||
+          currentSegment.hash !== (leafSegment.hash || "")
+        ) {
+          draft.segments[prefix].segments = [
+            ...draft.segments[prefix].segments.slice(
+              0,
+              draft.segments[prefix].index + (replace ? 0 : 1)
+            ),
+            {
+              key: createKey(),
+              state,
+              type: "leaf",
+              search: leafSegment.search || "",
+              hash: leafSegment.hash || "",
+            },
+          ];
+          draft.segments[prefix].index =
+            draft.segments[prefix].segments.length - 1;
+        }
+      } else if (draft.segments[prefix].index === -1) {
+        draft.segments[prefix].segments = [
+          {
+            key: createKey(),
+            state,
+            search: leafSegment.search || "",
+            hash: leafSegment.hash || "",
+            type: "leaf",
+          },
         ];
-        draft.prefixes[prefix].index = 0;
-      } else if (draft.prefixes[prefix].index === -1) {
-        draft.prefixes[prefix].segments = [
-          queryParams ? `$?${queryParams}` : "$",
-        ];
-        draft.prefixes[prefix].index = 0;
+        draft.segments[prefix].index = 0;
       }
-      //  pretty sure we want nostar links to reset the history of the node
-      //  else if (
-      //   !url.endsWith("*") &&
-      //   draft.prefixes[prefix].segments[draft.prefixes[prefix].index] !== "$"
-      // ) {
-      //   draft.prefixes[prefix].segments = ["$"];
-      //   draft.prefixes[prefix].index = 0;
-      // } else if (draft.prefixes[prefix].index === -1) {
-      //   draft.prefixes[prefix].segments = ["$"];
-      //   draft.prefixes[prefix].index += 1;
-      // }
     });
   });
   return removeUnreachablePaths(newHistory);
 };
 
+// check if the onPath is ever used
 const goRecursive = (
   history: NestedHistory,
   {
@@ -246,11 +309,11 @@ const goRecursive = (
   // we are at a $ point
   // we are going back in history up to a point where we can subtract an index without leaving it at -1 (there are at last two items on the stack)
 
-  const url = getCurrentUrlFromHistory(history);
+  const url = getLocationFromHistory(history).pathname;
   const path = onPath?.startsWith("/")
     ? onPath
     : combineUrlSegments("/", onPath || url || undefined);
-  const prefixes = history.prefixes[path];
+  const prefixes = history.segments[path];
   if (!prefixes) {
     return goRecursive(history, {
       onPath: combineUrlSegments(...path.split("/").slice(0, -1)),
@@ -260,9 +323,9 @@ const goRecursive = (
   // if undo can be performed at the current level
   if (
     direction === "back"
-      ? history.prefixes[path].index <= 0
-      : history.prefixes[path].index >=
-        history.prefixes[path].segments.length - 1
+      ? history.segments[path].index <= 0
+      : history.segments[path].index >=
+        history.segments[path].segments.length - 1
   ) {
     if (path === "/") {
       return { history, handled: false };
@@ -273,7 +336,7 @@ const goRecursive = (
     });
   }
   const newHistory = produce(history, (draft) => {
-    draft.prefixes[path].index += direction === "back" ? -1 : 1;
+    draft.segments[path].index += direction === "back" ? -1 : 1;
   });
   return { history: newHistory, handled: true };
 };
