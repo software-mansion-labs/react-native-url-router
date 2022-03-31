@@ -209,7 +209,6 @@ export const pushLocationToHistory = (
   replace = false,
   state = null
 ) => {
-  console.log("pushLocationToHistory", location);
   const { pathname, ...leafSegment } =
     typeof location === "string" ? { pathname: location } : location;
   const newUrlSegments = [

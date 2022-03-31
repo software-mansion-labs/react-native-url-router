@@ -22,7 +22,6 @@ const useNestedHistory = () => {
     },
   });
   const location = useMemo(() => getLocationFromHistory(history), [history]);
-  console.log({ history, location });
 
   const attemptGo = (config?: {
     onPath?: string;
