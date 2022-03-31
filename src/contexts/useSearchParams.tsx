@@ -1,9 +1,9 @@
-// import { createContext, useContext } from "react";
+// ALMOST VERBATIM FROM react-router-native
 
 import { useCallback, useMemo, useRef } from "react";
 import { NavigateOptions, useLocation, useNavigate } from "react-router";
 import URLSearchParamsPoly from "@ungap/url-search-params";
-// FROM react-router-native
+
 export type ParamKeyValuePair = [string, string];
 
 export type URLSearchParamsInit =
@@ -34,8 +34,6 @@ type SetURLSearchParams = (
   navigateOpts?: NavigateOptions | undefined
 ) => void;
 
-// It seems that the RN polyfill doesn't really return anything usable as a plain object
-// This is probably a convoluted approach, so I'm thinking about switching back to a minimal string parser.
 export function useSearchParams(
   defaultInit?: URLSearchParamsInit
 ): [object, SetURLSearchParams] {
