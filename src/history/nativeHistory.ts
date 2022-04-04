@@ -206,6 +206,12 @@ function createKey() {
   return Math.random().toString(36).substr(2, 8);
 }
 
+// TODO
+const resetPrefix = null;
+// removes prefix history and leaves just a leaf
+const wipePrefix = null;
+// removes the prefix and all branches that pointed to it
+
 const removeUnreachablePaths = ({ segments, ...rest }: NestedHistory) => {
   return { segments, ...rest }; // temp disable
   const accessibleKeys = getAccessibleKeys({ segments });
