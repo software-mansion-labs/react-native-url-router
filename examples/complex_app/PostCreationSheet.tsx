@@ -1,8 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { Link, StackNavigator } from "react-native-url-router";
-import { Route, useMatch, useNavigate } from "react-router";
+import {
+  Link,
+  StackNavigator,
+  useNestedHistoryContext,
+} from "react-native-url-router";
+import {
+  matchPath,
+  Route,
+  useLocation,
+  useMatch,
+  useNavigate,
+} from "react-router";
 const PostCreationSheet = () => {
   // ref
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -13,24 +23,28 @@ const PostCreationSheet = () => {
 
   // callbacks
 
-  const match = useMatch("/createPost/*");
+  const { getHistoryForPrefix } = useNestedHistoryContext();
+  const prefixHistory = getHistoryForPrefix("/createPost");
+  const lastHistoryItem = prefixHistory?.[prefixHistory.length - 1];
+  console.log({ lastHistoryItem, prefixHistory });
+  const showModal = matchPath("/createPost/*", lastHistoryItem?.pathname || "");
   useEffect(() => {
-    if (match) {
+    if (showModal) {
       bottomSheetRef.current?.expand();
     } else {
       bottomSheetRef.current?.close();
     }
-  }, [match]);
+  }, [showModal]);
   return (
     <BottomSheet
       ref={bottomSheetRef}
       animateOnMount
-      index={match ? 0 : -1}
+      index={showModal ? 0 : -1}
       snapPoints={snapPoints}
       enablePanDownToClose={true}
       onClose={() => {
-        if (match) {
-          navigate("/app/*");
+        if (showModal) {
+          navigate("", { state: {} });
         }
       }}
     >
@@ -50,7 +64,7 @@ const PostCreationSheet = () => {
           }}
         >
           <Route
-            path="createPost"
+            path="createPost/"
             element={<Text>Type up your post here</Text>}
           />
           <Route

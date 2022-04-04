@@ -48,56 +48,55 @@ const StackNavigator: FC<
   // .replace(/(\/|\*)*$/g, "")
   // const parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
   const historyWithPrefixes = getHistoryWithIndexesForPrefix(basenamePrefix);
-  const flattenedMatches = (
-    historyWithPrefixes.length > 0
-      ? historyWithPrefixes
-      : [
-          {
-            location: { pathname: "/" } as Location,
-            prefixIndexes: {} as PrefixIndexes,
-          },
-        ]
-  ).map((historyItem) => {
-    const url = prependSlash(
-      historyItem.location.pathname.slice(basenamePrefix.length) || "/"
-    );
+  const flattenedMatches = historyWithPrefixes
+    .map((historyItem) => {
+      const url = prependSlash(
+        historyItem.location.pathname.slice(basenamePrefix.length) || "/"
+      );
 
-    return {
-      match: last(
-        // TODO: performance can be increased by adding a limit to getHistoryWithIndexesForPrefix to only get
-        // into N levels of segments where N = max number of segments of any route segment
-        matchRoutes(routes, url) || []
-      ),
-      allMatches: matchRoutes(routes, url) || [],
-      ...historyItem,
-    };
-  });
-  const uniqueMatches = uniqueBy(
-    flattenedMatches.filter((m) => !!m.match?.pathnameBase),
-    (m) => m.match?.pathnameBase
+      return {
+        match: last(
+          // TODO: performance can be increased by adding a limit to getHistoryWithIndexesForPrefix to only get
+          // into N levels of segments where N = max number of segments of any route segment
+          matchRoutes(routes, url) || []
+        ),
+        allMatches: matchRoutes(routes, url) || [],
+        ...historyItem,
+      };
+    })
+    .filter((m) => !!m.match && !!m.match.pathnameBase)
+    .map((m) => {
+      const pathnameSegmentsCount = m.match?.pathnameBase.split("/").length;
+      const keyForNavigator =
+        m.location.key?.split("/").slice(0, pathnameSegmentsCount).join("/") ||
+        "default";
+      return { ...m, keyForNavigator };
+    });
+
+  const matches = uniqueBy(flattenedMatches, (m) => m.keyForNavigator);
+  console.log(
+    basenamePrefix,
+    matches.map((f) => f.keyForNavigator)
   );
 
-  if (uniqueMatches.length === 0) return null;
-  const filteredMatches = uniqueMatches.filter((r) => !!r.match);
+  if (matches.length === 0) return null;
+  // const filteredMatches = uniqueMatches.filter((r) => !!r.match);
   return (
     <ScreenStack style={{ flex: 1, alignSelf: "stretch" }} {...stackConfig}>
-      {filteredMatches.map((r, idx) => {
-        const historyItemForPreviousScreen = uniqueMatches
-          .slice(0, idx)
-          .reverse()
-          .find((i) => !!i.match); // find previous non null match
+      {matches.map((r, idx) => {
         let activityState: 0 | 1 | 2 = 0;
-        if (idx === filteredMatches.length - 2) activityState = 1;
-        if (idx === filteredMatches.length - 1) activityState = 2;
+        if (idx === matches.length - 2) activityState = 1;
+        if (idx === matches.length - 1) activityState = 2;
         return (
           <Screen
             // if index is different, two separate instances should render
             // eslint-disable-next-line react/no-array-index-key
-            key={`${r.match.pathnameBase}-${idx}`}
-            onDismissed={() => {
-              if (historyItemForPreviousScreen) {
+            key={`${r.location.key}-${idx}`}
+            onDismissed={(e) => {
+              const { dismissCount } = e.nativeEvent;
+              if (flattenedMatches[idx - dismissCount]?.prefixIndexes) {
                 applyPrefixIndexesToHistory(
-                  historyItemForPreviousScreen.prefixIndexes
+                  flattenedMatches[idx - dismissCount]?.prefixIndexes
                 );
               }
             }}
@@ -106,7 +105,7 @@ const StackNavigator: FC<
           >
             <SafeAreaView
               style={[
-                { flex: 1 },
+                { flex: 1, backgroundColor: "#fff" },
                 screensConfig?.[r.match.route?.path || ""]?.containerStyle ??
                   defaultScreenConfig?.containerStyle,
               ]}
@@ -138,8 +137,7 @@ const StackNavigator: FC<
                 <FocusContext.Provider
                   // eslint-disable-next-line react/jsx-no-constructed-context-values
                   value={{
-                    isFocused:
-                      isParentFocused && idx === filteredMatches.length - 1,
+                    isFocused: isParentFocused && idx === matches.length - 1,
                   }}
                 >
                   {r.match.route.element}

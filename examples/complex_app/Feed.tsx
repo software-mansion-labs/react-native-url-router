@@ -35,7 +35,7 @@ export default () => {
           <ScrollView>
             {videoIds.map((id) => {
               return (
-                <Link key={id} to={`/app/feed/${id}`}>
+                <Link key={id} to={`${id}`}>
                   <View
                     key={id}
                     style={{
@@ -49,7 +49,11 @@ export default () => {
                       source={{
                         uri: `https://picsum.photos/id/${id}/400/200`,
                       }}
-                      style={{ flex: 1 }}
+                      style={{
+                        flex: 1,
+
+                        backgroundColor: "red",
+                      }}
                     />
                   </View>
                 </Link>

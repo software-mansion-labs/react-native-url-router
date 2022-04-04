@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { To } from "react-router";
 import {
   getLocationFromHistory,
   pushLocationToHistory,
@@ -21,7 +22,7 @@ const useNestedHistory = () => {
       },
     },
   });
-  const location = useMemo(() => getLocationFromHistory(history), [history]);
+  console.log({ history });
 
   const attemptGo = (config?: {
     onPath?: string;
@@ -34,19 +35,19 @@ const useNestedHistory = () => {
   };
 
   return {
-    location,
+    location: getLocationFromHistory(history),
     history,
-    push: (to: Location, state: object) =>
-      setHistory((h) => pushLocationToHistory(h, to, false, state)),
-    replace: (to: Location, state: object) =>
-      setHistory((h) => pushLocationToHistory(h, to, true, state)),
     go: attemptGo,
+    push: (to: To, state?: unknown) =>
+      setHistory((h) => pushLocationToHistory(h, to, false, state)),
+    replace: (to: To, state?: unknown) =>
+      setHistory((h) => pushLocationToHistory(h, to, true, state)),
+    applyPrefixIndexesToHistory: (prefixIndexes: PrefixIndexes) =>
+      setHistory((h) => applyPrefixIndexesToHistory(h, prefixIndexes)),
     getHistoryForPrefix: (prefix: string) =>
       getHistoryForPrefix(history, prefix),
     getHistoryWithIndexesForPrefix: (prefix: string) =>
       getHistoryWithIndexesForPrefix(history, prefix, {}),
-    applyPrefixIndexesToHistory: (prefixIndexes: PrefixIndexes) =>
-      setHistory((h) => applyPrefixIndexesToHistory(h, prefixIndexes)),
   };
 };
 export default useNestedHistory;

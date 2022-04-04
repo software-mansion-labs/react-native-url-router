@@ -12,7 +12,11 @@ export type LeafSegment = Omit<Location, "pathname"> & {
 };
 
 // A segment that is inside a url - "feed" or "photo" in "/feed/photo/5"
-export type BranchSegment = { type: "branch"; pathnamePart: string };
+export type BranchSegment = {
+  type: "branch";
+  pathnamePart: string;
+  key: string;
+};
 
 export type Segment = LeafSegment | BranchSegment;
 
@@ -76,6 +80,7 @@ const reccurentGetLocationFromHistory = (
   const followingSegment = reccurentGetLocationFromHistory(history, nextPrefix);
   return {
     ...followingSegment,
+    key: `${segment.key}/${followingSegment.key}`,
     pathname: prependSlash(
       combineUrlSegments(segment.pathnamePart, followingSegment.pathname)
     ),
@@ -103,9 +108,11 @@ export type GoConfig = {
 
 export const getHistoryForPrefix = (
   history: NestedHistory,
-  prefix: string
+  prefix: string,
+  key = ""
 ): Location[] => {
   const root = history.segments[prefix];
+  console.log({ root, prefix, segs: Object.keys(history.segments) });
   if (guard("getHistoryForPrefix", prefix)) return [];
 
   if (!root) return [];
@@ -113,10 +120,11 @@ export const getHistoryForPrefix = (
     .slice(0, root.index + 1)
     .flatMap((segment) =>
       segment.type === "leaf"
-        ? [{ ...segment, pathname: prefix }]
+        ? [{ ...segment, pathname: prefix, key: `${key}/${segment.key}` }]
         : getHistoryForPrefix(
             history,
-            combineUrlSegments(prefix, segment.pathnamePart)
+            combineUrlSegments(prefix, segment.pathnamePart),
+            `${key}/${segment.key}`
           )
     );
   return successorHistory;
@@ -127,7 +135,8 @@ export type PrefixIndexes = { [prefix: string]: number };
 export const getHistoryWithIndexesForPrefix = (
   history: NestedHistory,
   prefix: string,
-  parentPrefixIndexes: PrefixIndexes
+  parentPrefixIndexes: PrefixIndexes,
+  key = ""
 ): { location: Location; prefixIndexes: PrefixIndexes }[] => {
   if (guard("getHistoryWithIndexesForPrefix", prefix)) return [];
 
@@ -140,7 +149,11 @@ export const getHistoryWithIndexesForPrefix = (
       segment.type === "leaf"
         ? [
             {
-              location: { ...segment, pathname: prefix },
+              location: {
+                ...segment,
+                pathname: prefix,
+                key: `${key}/${segment.key}`,
+              },
               prefixIndexes: {
                 ...parentPrefixIndexes,
                 [prefix]: idx,
@@ -153,7 +166,8 @@ export const getHistoryWithIndexesForPrefix = (
             {
               ...parentPrefixIndexes,
               [prefix]: idx,
-            }
+            },
+            `${key}/${segment.key}`
           )
     );
   return successorHistory;
@@ -163,6 +177,7 @@ export const applyPrefixIndexesToHistory = (
   history: NestedHistory,
   prefixIndexes: PrefixIndexes
 ) => {
+  console.log("applyPrefixIndexesToHistory");
   const newHistory = produce(history, (draft) => {
     Object.keys(prefixIndexes).forEach((prefix) => {
       draft.segments[prefix].index = prefixIndexes[prefix];
@@ -192,6 +207,7 @@ function createKey() {
 }
 
 const removeUnreachablePaths = ({ segments, ...rest }: NestedHistory) => {
+  return { segments, ...rest }; // temp disable
   const accessibleKeys = getAccessibleKeys({ segments });
   return {
     segments: {
@@ -209,6 +225,8 @@ export const pushLocationToHistory = (
   replace = false,
   state = null
 ) => {
+  if (guard("pushLocationToHistory", location)) return history;
+
   const { pathname, ...leafSegment } =
     typeof location === "string" ? { pathname: location } : location;
   const newUrlSegments = [
@@ -245,6 +263,7 @@ export const pushLocationToHistory = (
             {
               pathnamePart: newSegment,
               type: "branch",
+              key: createKey(),
             },
           ];
           draft.segments[prefix].index =
@@ -253,6 +272,7 @@ export const pushLocationToHistory = (
         // this is the final segment
       } else if (!pathname.endsWith("*")) {
         if (
+          !currentSegment ||
           currentSegment.type !== "leaf" ||
           // states are always considered different
           (!currentSegment.state && !!state) ||

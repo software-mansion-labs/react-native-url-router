@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import React, { FC, useContext, useMemo } from "react";
 import { BackHandler } from "react-native";
-import { Location, Router } from "react-router";
+import { Location, Router, To } from "react-router";
 import {
   GoConfig,
   NestedHistory,
@@ -43,7 +43,10 @@ const NativeRouterContext = React.createContext<{
 
 export const useNestedHistoryContext = () => useContext(NativeRouterContext);
 
-const NativeRouter: FC = ({ children }) => {
+const NativeRouter: FC<{ navigateOnMount?: To }> = ({
+  children,
+  navigateOnMount,
+}) => {
   const {
     location,
     go,
@@ -60,6 +63,11 @@ const NativeRouter: FC = ({ children }) => {
     );
     return () => subscription.remove();
   }, [go]);
+  // React.useEffect(() => {
+  //   console.log("PUSHING");
+  //   push(navigateOnMount);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
   const contextValue = useMemo(
     () => ({
       history,
