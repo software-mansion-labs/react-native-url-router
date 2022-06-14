@@ -91,7 +91,7 @@ const StackNavigator: FC<
           <Screen
             // if index is different, two separate instances should render
             // eslint-disable-next-line react/no-array-index-key
-            key={`${r.location.key}-${idx}`}
+            key={`${r.location.pathname}-${idx}`}
             onDismissed={(e) => {
               const { dismissCount } = e.nativeEvent;
               if (flattenedMatches[idx - dismissCount]?.prefixIndexes) {

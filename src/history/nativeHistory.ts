@@ -206,10 +206,41 @@ function createKey() {
   return Math.random().toString(36).substr(2, 8);
 }
 
-// TODO
-const resetPrefix = null;
+export const resetPrefix = (
+  history: NestedHistory,
+  prefix: string
+): NestedHistory => {
+  return produce(history, (draft) => {
+    draft.segments[prependSlash(prefix)].index = 0;
+    draft.segments[prependSlash(prefix)].segments = [
+      { type: "leaf", search: "", key: createKey(), state: null, hash: "" },
+    ];
+  });
+};
 // removes prefix history and leaves just a leaf
-const wipePrefix = null;
+export const removePrefix = (
+  history: NestedHistory,
+  prefix: string
+): NestedHistory => {
+  return produce(history, (draft) => {
+    delete draft.segments[prefix];
+    const parentSegment =
+      draft.segments[prependSlash(prefix.split("/").slice(0, -1).join("/"))];
+    if (!parentSegment) return;
+    const lastElementInHistoryAfterFilter = parentSegment.segments
+      .slice(0, parentSegment.index)
+      .reverse()
+      .find(
+        (s) => s.type === "leaf" || s.pathnamePart !== prefix.split("/").at(-1)
+      );
+    parentSegment.segments = parentSegment?.segments?.filter(
+      (s) => s.type === "leaf" || s.pathnamePart !== prefix.split("/").at(-1)
+    );
+    parentSegment.index = parentSegment.segments.indexOf(
+      lastElementInHistoryAfterFilter
+    );
+  });
+};
 // removes the prefix and all branches that pointed to it
 
 const removeUnreachablePaths = ({ segments, ...rest }: NestedHistory) => {

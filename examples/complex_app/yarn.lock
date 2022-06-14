@@ -4554,10 +4554,9 @@ react-native-screens@^3.4.0, react-native-screens@~3.10.1:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
 
-react-native-url-router@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/react-native-url-router/-/react-native-url-router-0.0.6.tgz#6b8f63414890570c0697c42ca1cb32471c30244d"
-  integrity sha512-PvV718i2em5bVWtNTttjT0n+uuJlyEE8D9gS8DE+cW6pxrVKUOhYREHaK3L4iMg079yczIlEfaTJUMPQiUMHSQ==
+react-native-url-router@../../react-native-url-router-v0.0.5.tgz:
+  version "0.0.5"
+  resolved "../../react-native-url-router-v0.0.5.tgz#db08c2da817b1d8599b4650ec8e83dba0c0fab59"
   dependencies:
     "@ungap/url-search-params" "^0.2.2"
     immer "^9.0.12"

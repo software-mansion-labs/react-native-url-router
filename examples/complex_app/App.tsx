@@ -3,7 +3,6 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   Button,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
@@ -15,7 +14,6 @@ import {
   TabNavigator,
   NavigateIfFocused,
   On,
-  Link,
 } from "react-native-url-router";
 import { Route } from "react-router";
 import Feed from "./Feed";
@@ -25,12 +23,7 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(true);
   return (
     <View style={styles.container}>
-      <NativeRouter navigateOnMount={{ pathname: "/app" }}>
-        <Link to="/app">
-          <Text style={{ padding: 30 }}>
-            testvcrsfdnfsdjnfdjfdsnjsdfnjdsjndfnjs fdsjfdndfsj
-          </Text>
-        </Link>
+      <NativeRouter>
         <On path="/app">
           <StackNavigator
             defaultScreenConfig={{

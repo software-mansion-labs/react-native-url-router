@@ -14,6 +14,8 @@ const NativeRouterContext = React.createContext<{
   history: NestedHistory;
   go: (config?: GoConfig) => void;
   getHistoryForPrefix: (prefix: string) => Location[];
+  removePrefix: (prefix: string) => void;
+  resetPrefix: (prefix: string) => void;
   applyPrefixIndexesToHistory: (prefixIndexes: PrefixIndexes) => void;
   getHistoryWithIndexesForPrefix: (
     prefix: string
@@ -37,16 +39,15 @@ const NativeRouterContext = React.createContext<{
   },
   go: () => {}, // deprecated, use go from router instead
   getHistoryForPrefix: () => [],
+  removePrefix: () => {},
+  resetPrefix: () => {},
   getHistoryWithIndexesForPrefix: () => [],
   applyPrefixIndexesToHistory: () => {},
 });
 
 export const useNestedHistoryContext = () => useContext(NativeRouterContext);
 
-const NativeRouter: FC<{ navigateOnMount?: To }> = ({
-  children,
-  navigateOnMount,
-}) => {
+const NativeRouter: FC = ({ children }) => {
   const {
     location,
     go,
@@ -56,6 +57,8 @@ const NativeRouter: FC<{ navigateOnMount?: To }> = ({
     getHistoryForPrefix,
     getHistoryWithIndexesForPrefix,
     applyPrefixIndexesToHistory,
+    removePrefix,
+    resetPrefix,
   } = useNativeHistory();
   React.useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () =>
@@ -64,7 +67,6 @@ const NativeRouter: FC<{ navigateOnMount?: To }> = ({
     return () => subscription.remove();
   }, [go]);
   // React.useEffect(() => {
-  //   console.log("PUSHING");
   //   push(navigateOnMount);
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, []);
@@ -75,6 +77,8 @@ const NativeRouter: FC<{ navigateOnMount?: To }> = ({
       getHistoryForPrefix,
       getHistoryWithIndexesForPrefix,
       applyPrefixIndexesToHistory,
+      removePrefix,
+      resetPrefix,
     }),
     [
       applyPrefixIndexesToHistory,
@@ -82,6 +86,8 @@ const NativeRouter: FC<{ navigateOnMount?: To }> = ({
       getHistoryWithIndexesForPrefix,
       go,
       history,
+      removePrefix,
+      resetPrefix,
     ]
   );
   return (

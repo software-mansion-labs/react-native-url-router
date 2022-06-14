@@ -1,16 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import BottomSheet from "@gorhom/bottom-sheet";
+import BottomSheet, { TouchableOpacity } from "@gorhom/bottom-sheet";
 import {
   Link,
+  On,
   StackNavigator,
   useNestedHistoryContext,
 } from "react-native-url-router";
 import {
   matchPath,
   Route,
-  useLocation,
-  useMatch,
   useNavigate,
 } from "react-router";
 const PostCreationSheet = () => {
@@ -23,10 +22,9 @@ const PostCreationSheet = () => {
 
   // callbacks
 
-  const { getHistoryForPrefix } = useNestedHistoryContext();
+  const { getHistoryForPrefix, removePrefix } = useNestedHistoryContext();
   const prefixHistory = getHistoryForPrefix("/createPost");
   const lastHistoryItem = prefixHistory?.[prefixHistory.length - 1];
-  console.log({ lastHistoryItem, prefixHistory });
   const showModal = matchPath("/createPost/*", lastHistoryItem?.pathname || "");
   useEffect(() => {
     if (showModal) {
@@ -49,29 +47,33 @@ const PostCreationSheet = () => {
       }}
     >
       <View style={styles.contentContainer}>
-        <Link to="/app/*">
+        <TouchableOpacity
+          onPress={() => {
+            console.log("remove");
+            removePrefix("/createPost");
+          }}
+        >
           <Text>Close 🎉</Text>
-        </Link>
+        </TouchableOpacity>
         <Link to="/createPost/rich">
           <Text>Richtext</Text>
         </Link>
-        <StackNavigator
-          defaultScreenConfig={{
-            stackHeaderConfig: {
-              backgroundColor: "white",
-              topInsetEnabled: false,
-            },
-          }}
-        >
-          <Route
-            path="createPost/"
-            element={<Text>Type up your post here</Text>}
-          />
-          <Route
-            path="createPost/rich"
-            element={<Text>Maybe create a rich text</Text>}
-          />
-        </StackNavigator>
+        <On path="/createPost">
+          <StackNavigator
+            defaultScreenConfig={{
+              stackHeaderConfig: {
+                backgroundColor: "white",
+                topInsetEnabled: false,
+              },
+            }}
+          >
+            <Route path="/" element={<Text>Type up your post here</Text>} />
+            <Route
+              path="/rich"
+              element={<Text>Maybe create a rich text</Text>}
+            />
+          </StackNavigator>
+        </On>
       </View>
     </BottomSheet>
   );

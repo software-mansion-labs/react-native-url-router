@@ -9,6 +9,8 @@ import {
   getHistoryWithIndexesForPrefix,
   PrefixIndexes,
   applyPrefixIndexesToHistory,
+  removePrefix,
+  resetPrefix,
 } from "./nativeHistory";
 
 const useNestedHistory = () => {
@@ -16,13 +18,16 @@ const useNestedHistory = () => {
     segments: {
       "/": {
         index: 0,
+        segments: [{ type: "branch", key: "default", pathnamePart: "app" }],
+      },
+      "/app": {
+        index: 0,
         segments: [
           { hash: "", search: "", type: "leaf", key: "default", state: {} },
         ],
       },
     },
   });
-  console.log({ history });
 
   const attemptGo = (config?: {
     onPath?: string;
@@ -42,6 +47,9 @@ const useNestedHistory = () => {
       setHistory((h) => pushLocationToHistory(h, to, false, state)),
     replace: (to: To, state?: unknown) =>
       setHistory((h) => pushLocationToHistory(h, to, true, state)),
+    removePrefix: (prefix: string) =>
+      setHistory((h) => removePrefix(h, prefix)),
+    resetPrefix: (prefix: string) => setHistory((h) => resetPrefix(h, prefix)),
     applyPrefixIndexesToHistory: (prefixIndexes: PrefixIndexes) =>
       setHistory((h) => applyPrefixIndexesToHistory(h, prefixIndexes)),
     getHistoryForPrefix: (prefix: string) =>
