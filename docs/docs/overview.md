@@ -233,13 +233,13 @@ stackHeaderConfig = {
 }
 ```
 
-## What if an opened URL is not found?
+<!-- ## What if an opened URL is not found?
 
 Well... Nothing. Screens still remain at their old order, tabs don't switch and you don't see a 404 screen.
 
 This allows us to do nifty stuff like botom modals and side by side views.
 
-As long as the two layers (screens behind the modal and the modal itself) have different URL prefixes (see nested history), it works automagically.
+As long as the two layers (screens behind the modal and the modal itself) have different URL prefixes (see nested history), it works automagically. -->
 
 <!-- link -->
 
@@ -248,3 +248,11 @@ Debug url bar
 TODO
 
 404s don't exist -->
+
+## Modals
+
+If you need to show two different navigation layers, it's best to use the `<On path="/pathPrefix">` component and render your modal based on a separate nested history prefix. You can create links to both modals and screens, add screens to modals and more.
+
+If you need to conditionally render same content as either a modal or a stack screen (like opening a modal from the app or a stack screen if linked to), you can modify the incoming link to a different prefix.
+
+(I'm still figuring this out, so just reach out to me on twitter @aleqsio if you want to use this)
