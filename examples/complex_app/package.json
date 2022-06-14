@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^4",
+    "@ungap/url-search-params": "^0.2.2",
     "expo": "~44.0.0",
     "expo-status-bar": "~1.2.0",
     "react": "17.0.1",
@@ -20,7 +21,7 @@
     "react-native-pager-view": "^5.4.9",
     "react-native-reanimated": "~2.3.1",
     "react-native-screens": "~3.10.1",
-    "react-native-url-router": "0.0.4",
+    "react-native-url-router": "../../react-native-url-router-v0.0.7.tgz",
     "react-native-web": "0.17.1",
     "react-router": "^6.2.1"
   },

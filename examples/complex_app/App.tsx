@@ -3,7 +3,6 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   Button,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,6 +13,7 @@ import {
   StackNavigator,
   TabNavigator,
   NavigateIfFocused,
+  On,
 } from "react-native-url-router";
 import { Route } from "react-router";
 import Feed from "./Feed";
@@ -24,7 +24,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <NativeRouter>
-        <>
+        <On path="/app">
           <StackNavigator
             defaultScreenConfig={{
               stackHeaderConfig: { hidden: true },
@@ -35,9 +35,9 @@ export default function App() {
               path="/"
               element={
                 loggedIn ? (
-                  <NavigateIfFocused to="/app" replace />
+                  <NavigateIfFocused to="/app/app" replace />
                 ) : (
-                  <NavigateIfFocused to="/login" replace />
+                  <NavigateIfFocused to="/app/login" replace />
                 )
               }
             />
@@ -50,7 +50,7 @@ export default function App() {
                   <Text>Login screen</Text>
                   <TextInput value="username" />
                   <TextInput value="password" />
-                  {loggedIn && <NavigateIfFocused to="/app" replace />}
+                  {loggedIn && <NavigateIfFocused to="/app/app" replace />}
                   <Button onPress={() => setLoggedIn(true)} title="Login" />
                 </View>
               }
@@ -74,7 +74,9 @@ export default function App() {
                           onPress={() => setLoggedIn(false)}
                           title="Logout"
                         />
-                        {!loggedIn && <NavigateIfFocused to="/login" replace />}
+                        {!loggedIn && (
+                          <NavigateIfFocused to="/app/login" replace />
+                        )}
                       </View>
                     }
                   />
@@ -82,8 +84,8 @@ export default function App() {
               }
             />
           </StackNavigator>
-          <PostCreationSheet />
-        </>
+        </On>
+        <PostCreationSheet />
       </NativeRouter>
       <StatusBar style="auto" />
     </View>

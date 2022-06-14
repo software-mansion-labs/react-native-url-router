@@ -14,6 +14,9 @@ export const combineUrlSegments = (...urls: (string | undefined)[]) => {
 };
 
 export const prependSlash = (url: string) => {
+  if (url.endsWith("/")) {
+    url = url.slice(0, -1);
+  }
   if (url.startsWith("/")) return url;
   return `/${url}`;
 };

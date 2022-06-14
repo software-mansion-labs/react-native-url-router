@@ -2,6 +2,7 @@ import React from "react";
 import { Text, View } from "react-native";
 import Link from "./Link";
 import { TabConfig } from "../navigators/TabNavigator";
+import { useNestedHistoryContext } from "../routers/NativeRouter";
 
 function DefaultBottomTabs({
   tabs,
@@ -11,6 +12,7 @@ function DefaultBottomTabs({
     active: boolean;
   } & TabConfig)[];
 }) {
+  const { resetPrefix } = useNestedHistoryContext();
   return (
     <View style={{ flexDirection: "row", width: "100%" }}>
       {tabs.map((tab) => (
@@ -24,8 +26,11 @@ function DefaultBottomTabs({
           }}
           key={tab.tabLink}
         >
+          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <Link
-            to={tab.tabLink}
+            {...(tab.active
+              ? { onPress: () => resetPrefix(tab.tabLink) }
+              : { to: tab.tabLink })}
             style={{
               flexGrow: 1,
               flexBasis: 0,

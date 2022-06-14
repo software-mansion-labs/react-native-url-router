@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import React, { FC, useContext, useMemo } from "react";
 import { BackHandler } from "react-native";
-import { Location, Router } from "react-router";
+import { Location, Router, To } from "react-router";
 import {
   GoConfig,
   NestedHistory,
@@ -14,6 +14,8 @@ const NativeRouterContext = React.createContext<{
   history: NestedHistory;
   go: (config?: GoConfig) => void;
   getHistoryForPrefix: (prefix: string) => Location[];
+  removePrefix: (prefix: string) => void;
+  resetPrefix: (prefix: string) => void;
   applyPrefixIndexesToHistory: (prefixIndexes: PrefixIndexes) => void;
   getHistoryWithIndexesForPrefix: (
     prefix: string
@@ -37,6 +39,8 @@ const NativeRouterContext = React.createContext<{
   },
   go: () => {}, // deprecated, use go from router instead
   getHistoryForPrefix: () => [],
+  removePrefix: () => {},
+  resetPrefix: () => {},
   getHistoryWithIndexesForPrefix: () => [],
   applyPrefixIndexesToHistory: () => {},
 });
@@ -53,6 +57,8 @@ const NativeRouter: FC = ({ children }) => {
     getHistoryForPrefix,
     getHistoryWithIndexesForPrefix,
     applyPrefixIndexesToHistory,
+    removePrefix,
+    resetPrefix,
   } = useNativeHistory();
   React.useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () =>
@@ -60,6 +66,10 @@ const NativeRouter: FC = ({ children }) => {
     );
     return () => subscription.remove();
   }, [go]);
+  // React.useEffect(() => {
+  //   push(navigateOnMount);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
   const contextValue = useMemo(
     () => ({
       history,
@@ -67,6 +77,8 @@ const NativeRouter: FC = ({ children }) => {
       getHistoryForPrefix,
       getHistoryWithIndexesForPrefix,
       applyPrefixIndexesToHistory,
+      removePrefix,
+      resetPrefix,
     }),
     [
       applyPrefixIndexesToHistory,
@@ -74,6 +86,8 @@ const NativeRouter: FC = ({ children }) => {
       getHistoryWithIndexesForPrefix,
       go,
       history,
+      removePrefix,
+      resetPrefix,
     ]
   );
   return (

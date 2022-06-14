@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { StatusBar } from "expo-status-bar";
 import { Button, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import {
