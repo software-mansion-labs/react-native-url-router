@@ -34,6 +34,7 @@ export type NestedHistory = {
 
 let count = 0;
 let lastOp = "";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const guard = (op: string, ...log: any) => {
   if (op !== lastOp) {
     lastOp = op;
@@ -202,9 +203,9 @@ const getAccessibleKeys = (history: NestedHistory, prefix = "/"): string[] => {
   ];
 };
 
-function createKey() {
+export const createKey = () => {
   return Math.random().toString(36).substr(2, 8);
-}
+};
 
 export const resetPrefix = (
   history: NestedHistory,
@@ -416,4 +417,21 @@ export const go = (
     handled: lastResult.handled,
     history: removeUnreachablePaths(lastResult.history),
   };
+};
+
+export const defaultNestedHistory: NestedHistory = {
+  segments: {
+    "/": {
+      index: 0,
+      segments: [
+        { hash: "", search: "", type: "leaf", key: "default", state: {} },
+      ],
+    },
+  },
+};
+
+export const getInitialHistoryForPath: (pathname: string) => NestedHistory = (
+  pathname
+) => {
+  return pushLocationToHistory(defaultNestedHistory, { pathname }, true);
 };

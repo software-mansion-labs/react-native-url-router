@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { To } from "react-router";
 import {
   getLocationFromHistory,
@@ -11,23 +11,32 @@ import {
   applyPrefixIndexesToHistory,
   removePrefix,
   resetPrefix,
+  defaultNestedHistory,
 } from "./nativeHistory";
 
-const useNestedHistory = () => {
-  const [history, setHistory] = useState<NestedHistory>({
-    segments: {
-      "/": {
-        index: 0,
-        segments: [{ type: "branch", key: "default", pathnamePart: "app" }],
-      },
-      "/app": {
-        index: 0,
-        segments: [
-          { hash: "", search: "", type: "leaf", key: "default", state: {} },
-        ],
-      },
-    },
-  });
+// const defaultNestedHistory: NestedHistory = {
+//   segments: {
+//     "/": {
+//       index: 0,
+//       segments: [{ type: "branch", key: "default", pathnamePart: "app" }],
+//     },
+//     "/app": {
+//       index: 0,
+//       segments: [
+//         { hash: "", search: "", type: "leaf", key: "default", state: {} },
+//       ],
+//     },
+//   },
+// };
+
+const useNestedHistory = ({
+  initialHistory,
+}: {
+  initialHistory?: NestedHistory;
+}) => {
+  const [history, setHistory] = useState<NestedHistory>(
+    initialHistory || defaultNestedHistory
+  );
 
   const attemptGo = (config?: {
     onPath?: string;

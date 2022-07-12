@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import PagerView from "react-native-pager-view";
 import {
   createRoutesFromChildren,

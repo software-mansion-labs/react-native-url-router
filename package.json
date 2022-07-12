@@ -1,11 +1,11 @@
 {
   "name": "react-native-url-router",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "A url based native navigation for react-native apps. Designed to integrate react-router and react-native-screens.",
   "main": "dist/index.js",
   "homepage": "https://github.com/software-mansion-labs/react-native-url-router#readme",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx ./src/**",
     "build": "tsc",
     "pack": "npm pack"
@@ -31,6 +31,7 @@
     "react-router": "6"
   },
   "devDependencies": {
+    "@types/jest": "^28.1.4",
     "@types/react": "^17.0.38",
     "@types/react-native": "^0.66.12",
     "@typescript-eslint/eslint-plugin": "^5.9.1",
@@ -43,7 +44,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
-    "jest": "^27.5.1",
+    "jest": "^28.1.2",
     "prettier": "^2.5.1",
     "react": "*",
     "react-native": "^0.66.4",
@@ -51,6 +52,7 @@
     "react-native-screens": "^3.10.1",
     "react-react": "^1.2.0",
     "react-router": "^6.2.1",
+    "ts-jest": "^28.0.5",
     "typescript": "^4.5.4"
   },
   "dependencies": {
