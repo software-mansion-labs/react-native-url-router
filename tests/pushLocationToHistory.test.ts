@@ -1,13 +1,7 @@
+import { vi, beforeEach, afterEach, test, expect, describe } from "vitest";
 import * as nativeHistory from "../src/history/nativeHistory";
+
 const { pushLocationToHistory } = nativeHistory;
-
-beforeEach(() => {
-  jest.spyOn(nativeHistory, "createKey").mockReturnValue("test-key");
-});
-
-afterEach(() => {
-  jest.spyOn(global.Math, "random").mockRestore();
-});
 
 const d = (debugValue: any) => console.log(JSON.stringify(debugValue, null, 2));
 
@@ -150,7 +144,8 @@ const historyAfterTwoPushesWithReplace = {
         },
       ],
     },
-    "/first": { // Should it be removed 
+    "/first": {
+      // Should it be removed
       index: 0,
       segments: [
         {
@@ -177,17 +172,140 @@ const historyAfterTwoPushesWithReplace = {
   },
 };
 
-describe("Replacing an absolute pathname", () => {
-  test("leaves only one segment in the path", () => {
-    const firstNavHistory = pushLocationToHistory(
-      nativeHistory.defaultNestedHistory,
-      {
-        pathname: "/first",
-      }
-    );
-    const secondNavHistory = pushLocationToHistory(firstNavHistory, {
-      pathname: "/second",
-    },true);
-    expect(secondNavHistory).toEqual(historyAfterTwoPushesWithReplace);
+describe("Replacing", () => {
+  describe("an absolute pathname", () => {
+    test("leaves only one segment in the path", () => {
+      const firstNavHistory = pushLocationToHistory(
+        nativeHistory.defaultNestedHistory,
+        {
+          pathname: "/first",
+        }
+      );
+      const secondNavHistory = pushLocationToHistory(
+        firstNavHistory,
+        {
+          pathname: "/second",
+        },
+        true
+      );
+      expect(secondNavHistory).toEqual(historyAfterTwoPushesWithReplace);
+    });
+  });
+
+  const historyAfterTwoPushesWithNestedReplace = {
+    segments: {
+      "/": {
+        index: 1,
+        segments: [
+          {
+            hash: "",
+            search: "",
+            type: "leaf",
+            key: "default",
+            state: {},
+          },
+          {
+            pathnamePart: "second",
+            type: "branch",
+            key: "test-key",
+          },
+        ],
+      },
+      "/second": {
+        index: 0,
+        segments: [
+          {
+            pathnamePart: "firstTab",
+            type: "branch",
+            key: "test-key",
+          },
+        ],
+      },
+      "/second/firstTab": {
+        index: 0,
+        segments: [
+          {
+            key: "test-key",
+            state: null,
+            type: "leaf",
+            search: "",
+            hash: "",
+          },
+        ],
+      },
+    },
+  };
+
+  describe("a nested segment", () => {
+    test("doesn't replace on all levels of hierarchy", () => {
+      // is this expected?
+      const firstNavHistory = pushLocationToHistory(
+        nativeHistory.defaultNestedHistory,
+        {
+          pathname: "/second",
+        }
+      );
+      const secondNavHistory = pushLocationToHistory(
+        firstNavHistory,
+        {
+          pathname: "/second/firstTab",
+        },
+        true
+      );
+      expect(secondNavHistory).toEqual(historyAfterTwoPushesWithNestedReplace);
+    });
+  });
+
+  const historyBeforeLogin = {
+    history: {
+      segments: {
+        "/": {
+          index: 0,
+          segments: [
+            {
+              key: "default",
+              pathnamePart: "app",
+              type: "branch",
+            },
+          ],
+        },
+        "/app": {
+          index: 0,
+          segments: [
+            {
+              key: "test-key",
+              pathnamePart: "login",
+              type: "branch",
+            },
+          ],
+        },
+        "/app/login": {
+          index: 0,
+          segments: [
+            {
+              hash: "",
+              key: "test-key",
+              search: "",
+              state: null,
+              type: "leaf",
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  describe("a nested segment", () => {
+    test("doesn't replace on all levels of hierarchy", () => {
+      const firstNavHistory = pushLocationToHistory(
+        nativeHistory.defaultNestedHistory,
+        {
+          pathname: "/app/book",
+        },
+        true
+      );
+      d(firstNavHistory);
+      // expect(firstNavHistory).toEqual(historyAfterTwoPushesWithNestedReplace);
+    });
   });
 });

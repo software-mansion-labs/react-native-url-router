@@ -7,14 +7,12 @@
     "plugin:prettier/recommended"
   ],
   "plugins": ["@typescript-eslint", "react", "prettier"],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
-    "ecmaVersion": 2018,
-    "sourceType": "module",
-    "project": "./tsconfig.json"
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": ["tsconfig.json", "tsconfig.tests.json"]
+      }
+    }
   },
   "rules": {
     "import/no-unresolved": 0,

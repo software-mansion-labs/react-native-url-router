@@ -1,13 +1,22 @@
+import { vi, beforeEach, afterEach, test, expect, describe } from "vitest";
+
 import * as nativeHistory from "../src/history/nativeHistory";
+
+vi.resetModules();
+vi.mock("../src/history/nativeHistory", async () => {
+  const axios = await vi.importActual("../src/history/nativeHistory");
+
+  return { ...axios, createKey: vi.fn() };
+});
+
 const { getInitialHistoryForPath } = nativeHistory;
 
-beforeEach(() => {
-  jest.spyOn(nativeHistory, "createKey").mockReturnValue("test-key");
-});
+// beforeEach(() => {
+//   vi.spyOn(nativeHistory, "createKey").mockReturnValue("test-key");
+//   console.log(nativeHistory.createKey());
+// });
 
-afterEach(() => {
-  jest.spyOn(global.Math, "random").mockRestore();
-});
+// afterEach(q() => {});
 
 test("Getting initial history for / returns a history of single segment /", () => {
   expect(getInitialHistoryForPath("/")).toEqual({
