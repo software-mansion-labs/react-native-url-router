@@ -46,19 +46,19 @@ const StackNavigator: FC<
   // .replace(/(\/|\*)*$/g, "")
   // const parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
   const historyWithPrefixes = getHistoryWithIndexesForPrefix(basenamePrefix);
+
   const flattenedMatches = historyWithPrefixes
     .map((historyItem) => {
-      const url = prependSlash(
-        historyItem.location.pathname.slice(basenamePrefix.length) || "/"
-      );
-
+      const matches =
+        matchRoutes(routes, historyItem.location.pathname, basenamePrefix) ||
+        [];
       return {
         match: last(
           // TODO: performance can be increased by adding a limit to getHistoryWithIndexesForPrefix to only get
           // into N levels of segments where N = max number of segments of any route segment
-          matchRoutes(routes, url) || []
+          matches
         ),
-        allMatches: matchRoutes(routes, url) || [],
+        allMatches: matches,
         ...historyItem,
       };
     })
@@ -72,7 +72,6 @@ const StackNavigator: FC<
     });
 
   const matches = uniqueBy(flattenedMatches, (m) => m.keyForNavigator);
-
   if (matches.length === 0) return null;
   // const filteredMatches = uniqueMatches.filter((r) => !!r.match);
   return (

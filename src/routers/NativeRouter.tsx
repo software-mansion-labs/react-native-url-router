@@ -47,10 +47,10 @@ const NativeRouterContext = React.createContext<{
 
 export const useNestedHistoryContext = () => useContext(NativeRouterContext);
 
-const NativeRouter: FC<{ initialHistory?: NestedHistory }> = ({
-  children,
-  initialHistory,
-}) => {
+const NativeRouter: FC<{
+  initialHistory?: NestedHistory;
+  webURLRootPrefix?: string;
+}> = ({ children, initialHistory, webURLRootPrefix }) => {
   const {
     location,
     go,
@@ -62,17 +62,13 @@ const NativeRouter: FC<{ initialHistory?: NestedHistory }> = ({
     applyPrefixIndexesToHistory,
     removePrefix,
     resetPrefix,
-  } = useNativeHistory({ initialHistory });
+  } = useNativeHistory({ initialHistory, webURLRootPrefix });
   React.useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () =>
       go()
     );
     return () => subscription.remove();
   }, [go]);
-  // React.useEffect(() => {
-  //   push(navigateOnMount);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
   const contextValue = useMemo(
     () => ({
       history,
