@@ -2,6 +2,7 @@
 import produce from "immer";
 import { Location, To } from "react-router";
 import { combineUrlSegments, prependSlash } from "../utils";
+import createKey from "../utils/createKey";
 
 // Segments are delimited by "/"
 
@@ -113,7 +114,6 @@ export const getHistoryForPrefix = (
   key = ""
 ): Location[] => {
   const root = history.segments[prefix];
-  console.log({ root, prefix, segs: Object.keys(history.segments) });
   if (guard("getHistoryForPrefix", prefix)) return [];
 
   if (!root) return [];
@@ -201,10 +201,6 @@ const getAccessibleKeys = (history: NestedHistory, prefix = "/"): string[] => {
           : []
     ),
   ];
-};
-
-export const createKey = () => {
-  return Math.random().toString(36).substr(2, 8);
 };
 
 export const resetPrefix = (

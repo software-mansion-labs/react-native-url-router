@@ -24,6 +24,7 @@
     "package.json"
   ],
   "peerDependencies": {
+    "history": "6",
     "react": "*",
     "react-native": "*",
     "react-native-pager-view": "5",
@@ -39,11 +40,13 @@
     "eslint": "^8.7.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-import-resolver-typescript": "^3.2.6",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "history": "^5.3.0",
     "jest": "^28.1.2",
     "prettier": "^2.5.1",
     "react": "*",
