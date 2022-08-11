@@ -51,13 +51,13 @@ It also integrates with react-native-screens providing a fully native stack beha
 For expo:
 
 ```
-expo install react-native-url-router react-native-pager-view react-native-screens react-router
+expo install react-native-url-router react-native-pager-view react-native-screens react-router history
 ```
 
 For regular react native >=0.60:
 
 ```
-yarn add react-native-url-router react-native-pager-view react-native-screens react-router
+yarn add react-native-url-router react-native-pager-view react-native-screens react-router history
 
 ```
 
