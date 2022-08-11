@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import React, { FC, useContext, useMemo } from "react";
 import { BackHandler } from "react-native";
-import { Location, Router, To } from "react-router";
+import { Location, Router } from "react-router";
 import {
   GoConfig,
   NestedHistory,
@@ -47,7 +47,10 @@ const NativeRouterContext = React.createContext<{
 
 export const useNestedHistoryContext = () => useContext(NativeRouterContext);
 
-const NativeRouter: FC = ({ children }) => {
+const NativeRouter: FC<{ initialHistory?: NestedHistory }> = ({
+  children,
+  initialHistory,
+}) => {
   const {
     location,
     go,
@@ -59,7 +62,7 @@ const NativeRouter: FC = ({ children }) => {
     applyPrefixIndexesToHistory,
     removePrefix,
     resetPrefix,
-  } = useNativeHistory();
+  } = useNativeHistory({ initialHistory });
   React.useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () =>
       go()

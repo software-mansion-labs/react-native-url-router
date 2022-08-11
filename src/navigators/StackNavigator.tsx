@@ -4,7 +4,6 @@ import {
   matchRoutes,
   Routes,
   UNSAFE_RouteContext,
-  Location,
 } from "react-router";
 import {
   Screen,
@@ -14,7 +13,6 @@ import {
 import { SafeAreaView, ViewStyle } from "react-native";
 import { combineUrlSegments, last, prependSlash, uniqueBy } from "../utils";
 import { useNestedHistoryContext } from "../routers/NativeRouter";
-import { PrefixIndexes } from "../history/nativeHistory";
 import { FocusContext } from "../contexts/FocusContext";
 
 export type ScreenConfig = {
@@ -74,10 +72,6 @@ const StackNavigator: FC<
     });
 
   const matches = uniqueBy(flattenedMatches, (m) => m.keyForNavigator);
-  console.log(
-    basenamePrefix,
-    matches.map((f) => f.keyForNavigator)
-  );
 
   if (matches.length === 0) return null;
   // const filteredMatches = uniqueMatches.filter((r) => !!r.match);

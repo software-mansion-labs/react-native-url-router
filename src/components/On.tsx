@@ -17,7 +17,6 @@ function On({ children, path }: { children: ReactNode; path: string }) {
       pathnameBase: combineUrlSegments(parentPathnameBase, path),
     },
   ];
-  console.log({ matchesNestedByPath });
   return (
     <UNSAFE_RouteContext.Provider
       // figure out how to get the memoing to work

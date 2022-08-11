@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "noEmit": true,
     "esModuleInterop": true,
     "jsx": "react-native",
     "lib": ["DOM", "ESNext"],
@@ -8,11 +9,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "declaration": true,
-    "outDir": "./dist",
     "target": "ESNext",
-    
   },
-  "include": ["src/**/*"],
+  "include": ["tests/**/*","vitest.config.ts"],
   "exclude": [
     "node_modules",
   ],
