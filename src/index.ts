@@ -8,8 +8,9 @@ export {
 
 // Two navigators that provide corresponding behavior while being history-aware.
 // Need to be used in conjunction with the NativeRouter.
-export { default as TabNavigator } from "./navigators/TabNavigator";
-export { default as StackNavigator } from "./navigators/StackNavigator";
+export { default as TabNavigator } from "./navigators/TabNavigator/TabNavigator.native";
+export { default as StackNavigator } from "./navigators/StackNavigator/StackNavigator.native";
+export { default as Route } from "./components/Route";
 
 export { default as Link } from "./components/Link";
 export { default as On } from "./components/On";

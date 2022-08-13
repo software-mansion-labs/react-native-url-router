@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import Link from "./Link";
-import { TabConfig } from "../navigators/TabNavigator";
+import { TabConfig } from "../navigators/TabNavigator/commons";
 import { useNestedHistoryContext } from "../routers/NativeRouter";
 
 function DefaultBottomTabs({

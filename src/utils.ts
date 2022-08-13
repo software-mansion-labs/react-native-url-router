@@ -1,3 +1,5 @@
+import { Path, To } from "history";
+
 export const last = <T>(a: T[]) => {
   if (!a) return undefined;
   return a[a.length - 1];
@@ -38,4 +40,32 @@ export const uniqueBy = <T>(array: T[], key: (t: T) => string) => {
     }
   }
   return result;
+};
+
+export const uniqueByIfConsequtive = <T>(array: T[], key: (t: T) => string) => {
+  const result: T[] = [];
+  let lastItemKey: string | undefined;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const item of array) {
+    if (lastItemKey !== key(item)) {
+      lastItemKey = key(item); // set any value to Map
+      result.push(item);
+    }
+  }
+  return result;
+};
+
+export const getToAsPieces = (to: To): Partial<Path> => {
+  if (typeof to !== "string") {
+    return to;
+  }
+  const url = new URL(to);
+  return url;
+};
+
+export const getToPiecesAsString = (to: To): string => {
+  if (typeof to === "string") {
+    return to;
+  }
+  return `${to.pathname}${to.search}${to.hash}`;
 };

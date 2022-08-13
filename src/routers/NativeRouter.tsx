@@ -49,8 +49,8 @@ export const useNestedHistoryContext = () => useContext(NativeRouterContext);
 
 const NativeRouter: FC<{
   initialHistory?: NestedHistory;
-  webURLRootPrefix?: string;
-}> = ({ children, initialHistory, webURLRootPrefix }) => {
+  attachWebURLOn?: string;
+}> = ({ children, initialHistory, attachWebURLOn }) => {
   const {
     location,
     go,
@@ -62,7 +62,7 @@ const NativeRouter: FC<{
     applyPrefixIndexesToHistory,
     removePrefix,
     resetPrefix,
-  } = useNativeHistory({ initialHistory, webURLRootPrefix });
+  } = useNativeHistory({ initialHistory, attachWebURLOn });
   React.useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () =>
       go()

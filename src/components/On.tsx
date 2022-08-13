@@ -1,7 +1,9 @@
 import React, { ReactNode, useContext } from "react";
-import { UNSAFE_RouteContext } from "react-router";
+import { UNSAFE_LocationContext, UNSAFE_RouteContext } from "react-router";
+import { Action } from "history";
 import { combineUrlSegments } from "../utils";
 import { FocusContext } from "../contexts/FocusContext";
+import { useNestedHistoryContext } from "../routers/NativeRouter";
 
 function On({ children, path }: { children: ReactNode; path: string }) {
   const { isFocused: isParentFocused } = useContext(FocusContext);
@@ -17,24 +19,40 @@ function On({ children, path }: { children: ReactNode; path: string }) {
       pathnameBase: combineUrlSegments(parentPathnameBase, path),
     },
   ];
+  const { getHistoryForPrefix } = useNestedHistoryContext();
   return (
-    <UNSAFE_RouteContext.Provider
-      // figure out how to get the memoing to work
+    <UNSAFE_LocationContext.Provider
+      // Needs a fix
       // eslint-disable-next-line react/jsx-no-constructed-context-values
       value={{
-        matches: matchesNestedByPath,
-        outlet: null,
+        location: getHistoryForPrefix(path).at(-1) || {
+          pathname: path,
+          hash: "",
+          key: "default",
+          search: "",
+          state: null,
+        },
+        navigationType: Action.Pop,
       }}
     >
-      <FocusContext.Provider
+      <UNSAFE_RouteContext.Provider
+        // figure out how to get the memoing to work
         // eslint-disable-next-line react/jsx-no-constructed-context-values
         value={{
-          isFocused: isParentFocused,
+          matches: matchesNestedByPath,
+          outlet: null,
         }}
       >
-        {children}
-      </FocusContext.Provider>
-    </UNSAFE_RouteContext.Provider>
+        <FocusContext.Provider
+          // eslint-disable-next-line react/jsx-no-constructed-context-values
+          value={{
+            isFocused: isParentFocused,
+          }}
+        >
+          {children}
+        </FocusContext.Provider>
+      </UNSAFE_RouteContext.Provider>
+    </UNSAFE_LocationContext.Provider>
   );
 }
 export default On;

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import produce from "immer";
 import { Location, To } from "react-router";
-import { combineUrlSegments, prependSlash } from "../utils";
+import { combineUrlSegments, prependSlash, getToAsPieces } from "../utils";
 import createKey from "../utils/createKey";
 
 // Segments are delimited by "/"
@@ -178,7 +178,6 @@ export const applyPrefixIndexesToHistory = (
   history: NestedHistory,
   prefixIndexes: PrefixIndexes
 ) => {
-  console.log("applyPrefixIndexesToHistory");
   const newHistory = produce(history, (draft) => {
     Object.keys(prefixIndexes).forEach((prefix) => {
       draft.segments[prefix].index = prefixIndexes[prefix];
@@ -240,7 +239,10 @@ export const removePrefix = (
 };
 // removes the prefix and all branches that pointed to it
 
-const removeUnreachablePaths = ({ segments, ...rest }: NestedHistory) => {
+const removeUnreachablePaths = ({
+  segments,
+  ...rest
+}: NestedHistory): NestedHistory => {
   return { segments, ...rest }; // temp disable
   const accessibleKeys = getAccessibleKeys({ segments });
   return {
@@ -255,14 +257,13 @@ const removeUnreachablePaths = ({ segments, ...rest }: NestedHistory) => {
 };
 export const pushLocationToHistory = (
   history: NestedHistory,
-  location: To,
+  to: To,
   replace = false,
   state = null
 ) => {
-  if (guard("pushLocationToHistory", location)) return history;
+  if (guard("pushLocationToHistory", to)) return history;
 
-  const { pathname, ...leafSegment } =
-    typeof location === "string" ? { pathname: location } : location;
+  const { pathname, ...leafSegment } = getToAsPieces(to);
   const newUrlSegments = [
     ...pathname
       .replace(/(\*|\/)$/, "")
@@ -394,13 +395,10 @@ const goRecursive = (
   });
   return { history: newHistory, handled: true };
 };
+
 export const go = (
   history: NestedHistory,
-  config?: {
-    onPath?: string;
-    direction?: "back" | "forward";
-    count?: number;
-  }
+  config?: GoConfig
 ): { handled: boolean; history: NestedHistory } => {
   if (guard("go", config)) return { handled: false, history };
   let i = config?.count || 1;
