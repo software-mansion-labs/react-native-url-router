@@ -1,37 +1,31 @@
 import React, { ComponentProps, FC, useContext } from "react";
-import {
-  createRoutesFromChildren,
-  matchRoutes,
-  Routes,
-  UNSAFE_RouteContext,
-} from "react-router";
+import { matchRoutes, Routes, UNSAFE_RouteContext } from "react-router";
 import {
   Screen,
   ScreenStack,
   ScreenStackHeaderConfig,
 } from "react-native-screens";
-import { SafeAreaView, ViewStyle } from "react-native";
-import { combineUrlSegments, last, prependSlash, uniqueBy } from "../utils";
-import { useNestedHistoryContext } from "../routers/NativeRouter";
-import { FocusContext } from "../contexts/FocusContext";
-
-export type ScreenConfig = {
-  title?: string;
-  stackHeaderConfig?: ComponentProps<typeof ScreenStackHeaderConfig>;
-  containerStyle?: ViewStyle;
-};
-
-export type ScreensConfig = {
-  [path: string]: ScreenConfig;
-};
+import { SafeAreaView, View, ViewStyle } from "react-native";
+import {
+  combineUrlSegments,
+  last,
+  prependSlash,
+  uniqueBy,
+  uniqueByIfConsequtive,
+} from "../../utils";
+import { useNestedHistoryContext } from "../../routers/NativeRouter";
+import { FocusContext } from "../../contexts/FocusContext";
+import createRoutesFromChildren, {
+  RouteObjectWithConfig,
+} from "../../utils/createRoutesFromChildrenPatched";
+import { ScreenConfig } from "./commons";
 
 const StackNavigator: FC<
   ComponentProps<typeof Routes> & {
-    screensConfig?: ScreensConfig;
     defaultScreenConfig?: ScreenConfig;
     stackConfig?: ComponentProps<typeof ScreenStack>;
   }
-> = ({ children, screensConfig, defaultScreenConfig, stackConfig }) => {
+> = ({ children, defaultScreenConfig, stackConfig }) => {
   const { getHistoryWithIndexesForPrefix, applyPrefixIndexesToHistory } =
     useNestedHistoryContext();
   const routes = createRoutesFromChildren(children);
@@ -43,10 +37,10 @@ const StackNavigator: FC<
 
   const parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
   const basenamePrefix = prependSlash(parentPathnameBase);
-  // .replace(/(\/|\*)*$/g, "")
-  // const parentPathnameBase = routeMatch ? routeMatch.pathnameBase : "/";
-  const historyWithPrefixes = getHistoryWithIndexesForPrefix(basenamePrefix);
 
+  const historyWithPrefixes = getHistoryWithIndexesForPrefix(basenamePrefix);
+  // It will contain serveral entries that should match to a single screen.
+  // This is because it returns multiple entries for each of the child entries, that are a concern of nested navigators instead of this one.
   const flattenedMatches = historyWithPrefixes
     .map((historyItem) => {
       const matches =
@@ -65,15 +59,23 @@ const StackNavigator: FC<
     .filter((m) => !!m.match && !!m.match.pathnameBase)
     .map((m) => {
       const pathnameSegmentsCount = m.match?.pathnameBase.split("/").length;
-      const keyForNavigator =
+      const uniquenessKeyForThisNavigator =
         m.location.key?.split("/").slice(0, pathnameSegmentsCount).join("/") ||
         "default";
-      return { ...m, keyForNavigator };
+      return { ...m, uniquenessKeyForThisNavigator };
     });
+  const uniqueMatchesForThisNavigator = uniqueBy(
+    flattenedMatches,
+    (m) => m.uniquenessKeyForThisNavigator
+  );
 
-  const matches = uniqueBy(flattenedMatches, (m) => m.keyForNavigator);
+  // It can still contain screens that are the same screen, just duplicated to several parent entries.
+  // To fix this we also filter out screens that are side by side and have the same key of the last segment.
+  const matches = uniqueByIfConsequtive(uniqueMatchesForThisNavigator, (m) =>
+    m.location.key.split("/").at(-1)
+  );
+
   if (matches.length === 0) return null;
-  // const filteredMatches = uniqueMatches.filter((r) => !!r.match);
   return (
     <ScreenStack style={{ flex: 1, alignSelf: "stretch" }} {...stackConfig}>
       {matches.map((r, idx) => {
@@ -96,11 +98,11 @@ const StackNavigator: FC<
             activityState={activityState}
             stackAnimation="slide_from_right"
           >
-            <SafeAreaView
+            <View
               style={[
                 { flex: 1, backgroundColor: "#fff" },
-                screensConfig?.[r.match.route?.path || ""]?.containerStyle ??
-                  defaultScreenConfig?.containerStyle,
+                (r.match.route as RouteObjectWithConfig)?.additional
+                  ?.containerStyle ?? defaultScreenConfig?.containerStyle,
               ]}
             >
               <UNSAFE_RouteContext.Provider
@@ -136,15 +138,16 @@ const StackNavigator: FC<
                   {r.match.route.element}
                 </FocusContext.Provider>
               </UNSAFE_RouteContext.Provider>
-            </SafeAreaView>
+            </View>
             <ScreenStackHeaderConfig
               title={
-                screensConfig?.[r.match.route?.path || ""]?.title ??
+                (r.match.route as RouteObjectWithConfig)?.additional?.title ??
                 defaultScreenConfig?.title ??
                 r.match.route.path
               }
               {...defaultScreenConfig?.stackHeaderConfig}
-              {...screensConfig?.[r.match.route?.path || ""]?.stackHeaderConfig}
+              {...(r.match.route as RouteObjectWithConfig)?.additional
+                ?.stackHeaderConfig}
             />
           </Screen>
         );

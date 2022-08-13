@@ -1,60 +1,29 @@
-import React, {
-  ComponentProps,
-  ReactElement,
-  ReactNode,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import React, { ComponentProps, useContext, useEffect, useRef } from "react";
 import { View } from "react-native";
 import PagerView from "react-native-pager-view";
 import {
-  createRoutesFromChildren,
   matchRoutes,
   Routes,
   UNSAFE_RouteContext,
   useNavigate,
 } from "react-router";
 // import { Freeze } from "react-freeze";
-import { useNestedHistoryContext } from "../routers/NativeRouter";
+import { useNestedHistoryContext } from "../../routers/NativeRouter";
 import {
   combineUrlSegments,
   last,
   prependSlash,
   surroundSlash,
-} from "../utils";
-import DefaultBottomTabs from "../components/DefaultBottomTabs";
-import { FocusContext } from "../contexts/FocusContext";
-
-export type TabConfig<AdditionalTabConfig = Record<string, unknown>> = {
-  title?: string;
-  icon?: (props: { active: boolean; color: string; size: number }) => ReactNode;
-} & AdditionalTabConfig;
-
-export type TabsConfig<AdditionalTabConfig extends Record<string, unknown>> = {
-  [path: string]: TabConfig<AdditionalTabConfig>;
-};
-
-export type Tabs<AdditionalTabConfig extends Record<string, unknown>> = ({
-  tabLink: string;
-  active: boolean;
-} & TabConfig<AdditionalTabConfig>)[];
-
-export type Props<
-  AdditionalTabConfig extends Record<string, unknown> = Record<string, unknown>
-> = {
-  tabsConfig?: TabsConfig<AdditionalTabConfig>;
-  // defaultTabUrl?: string; // A relative URL to the default tab, TabNavigator calls navigateOnPrefix if the TabNavigator is rendered but the URL doesn't point to any of the tabs
-  BottomTabsComponent?: (props: {
-    tabs: Tabs<AdditionalTabConfig>;
-  }) => ReactElement;
-};
+} from "../../utils";
+import DefaultBottomTabs from "../../components/DefaultBottomTabs";
+import { FocusContext } from "../../contexts/FocusContext";
+import { TabNavigatorProps } from "./commons";
+import createRoutesFromChildren from "../../utils/createRoutesFromChildrenPatched";
 
 function TabNavigator({
   children,
-  tabsConfig,
   BottomTabsComponent = DefaultBottomTabs,
-}: ComponentProps<typeof Routes> & Props) {
+}: ComponentProps<typeof Routes> & TabNavigatorProps) {
   const { getHistoryForPrefix } = useNestedHistoryContext();
   const { isFocused: isParentFocused } = useContext(FocusContext);
 
@@ -84,7 +53,7 @@ function TabNavigator({
       currentTabIndex === idx ? "" : "*"
     }`,
     active: idx === currentTabIndex,
-    ...tabsConfig?.[r.path || ""],
+    ...r?.additional,
   }));
 
   const ref = useRef<PagerView>(null);
@@ -142,6 +111,7 @@ function TabNavigator({
                   style={{
                     width: "100%",
                     height: "100%",
+                    ...route.additional.containerStyle,
                   }}
                   // eslint-disable-next-line react/no-array-index-key
                   key={`${match.pathname}-${idx}`}

@@ -1,62 +1,27 @@
-import React, {
-  ComponentProps,
-  ReactElement,
-  ReactNode,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import React, { ComponentProps, useContext } from "react";
 import { View } from "react-native";
-import {
-  createRoutesFromChildren,
-  matchRoutes,
-  Routes,
-  UNSAFE_RouteContext,
-  useNavigate,
-} from "react-router";
-// import { Freeze } from "react-freeze";
-import { useNestedHistoryContext } from "../routers/NativeRouter";
+import { matchRoutes, Routes, UNSAFE_RouteContext } from "react-router";
+import { useNestedHistoryContext } from "../../routers/NativeRouter";
 import {
   combineUrlSegments,
   last,
   prependSlash,
   surroundSlash,
-} from "../utils";
-import DefaultBottomTabs from "../components/DefaultBottomTabs";
-import { FocusContext } from "../contexts/FocusContext";
+} from "../../utils";
+import DefaultBottomTabs from "../../components/DefaultBottomTabs";
+import { FocusContext } from "../../contexts/FocusContext";
+import { TabNavigatorProps } from "./commons";
+import createRoutesFromChildren from "../../utils/createRoutesFromChildrenPatched";
 
-export type TabConfig<AdditionalTabConfig = Record<string, unknown>> = {
-  title?: string;
-  icon?: (props: { active: boolean; color: string; size: number }) => ReactNode;
-} & AdditionalTabConfig;
-
-export type TabsConfig<AdditionalTabConfig extends Record<string, unknown>> = {
-  [path: string]: TabConfig<AdditionalTabConfig>;
-};
-
-export type Tabs<AdditionalTabConfig extends Record<string, unknown>> = ({
-  tabLink: string;
-  active: boolean;
-} & TabConfig<AdditionalTabConfig>)[];
-
-export type Props<
-  AdditionalTabConfig extends Record<string, unknown> = Record<string, unknown>
-> = {
-  tabsConfig?: TabsConfig<AdditionalTabConfig>;
-  // defaultTabUrl?: string; // A relative URL to the default tab, TabNavigator calls navigateOnPrefix if the TabNavigator is rendered but the URL doesn't point to any of the tabs
-  BottomTabsComponent?: (props: {
-    tabs: Tabs<AdditionalTabConfig>;
-  }) => ReactElement;
+const alwaysFocused = {
+  isFocused: true,
 };
 
 function TabNavigator({
   children,
-  tabsConfig,
   BottomTabsComponent = DefaultBottomTabs,
-}: ComponentProps<typeof Routes> & Props) {
+}: ComponentProps<typeof Routes> & TabNavigatorProps) {
   const { getHistoryForPrefix } = useNestedHistoryContext();
-  const { isFocused: isParentFocused } = useContext(FocusContext);
-
   const routes = createRoutesFromChildren(children);
   const { matches: parentMatches } = useContext(UNSAFE_RouteContext);
   const routeMatch = parentMatches[parentMatches.length - 1];
@@ -82,7 +47,7 @@ function TabNavigator({
       currentTabIndex === idx ? "" : "*"
     }`,
     active: idx === currentTabIndex,
-    ...tabsConfig?.[r.path || ""],
+    ...r?.additional,
   }));
 
   if (routes.length <= currentTabIndex) return null;
@@ -93,6 +58,7 @@ function TabNavigator({
       pathname: prependSlash(currentRoute.path || "/"),
     }) || [];
   const match = last(allMatches);
+
   if (!match)
     return (
       <View
@@ -111,7 +77,6 @@ function TabNavigator({
             width: "100%",
             height: "100%",
           }}
-          // eslint-disable-next-line react/no-array-index-key
         >
           <UNSAFE_RouteContext.Provider
             // figure out how to get the memoing to work
@@ -131,12 +96,7 @@ function TabNavigator({
               outlet: null,
             }}
           >
-            <FocusContext.Provider
-              // eslint-disable-next-line react/jsx-no-constructed-context-values
-              value={{
-                isFocused: true,
-              }}
-            >
+            <FocusContext.Provider value={alwaysFocused}>
               {match.route.element}
             </FocusContext.Provider>
           </UNSAFE_RouteContext.Provider>

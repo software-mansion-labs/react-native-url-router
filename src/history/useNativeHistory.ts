@@ -1,7 +1,8 @@
-import { BrowserHistory, createBrowserHistory } from "history";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Platform } from "react-native";
 import { To } from "react-router";
+import { prependSlash } from "../utils";
+import useWebIntegration from "../utils/useWebIntegration.web";
 import {
   getLocationFromHistory,
   pushLocationToHistory,
@@ -15,6 +16,7 @@ import {
   resetPrefix,
   defaultNestedHistory,
   getInitialHistoryForPath,
+  GoConfig,
 } from "./nativeHistory";
 
 const useWebLocation = () => {
@@ -26,25 +28,19 @@ const useWebLocation = () => {
 
 const useNestedHistory = ({
   initialHistory,
-  webURLRootPrefix = "/",
+  attachWebURLOn = "",
 }: {
   initialHistory?: NestedHistory;
-  webURLRootPrefix?: string;
+  attachWebURLOn?: string;
 }) => {
   const location = useWebLocation();
   const [history, setHistory] = useState<NestedHistory>(
     location?.pathname && location.pathname !== "/"
-      ? getInitialHistoryForPath(`${webURLRootPrefix}${location.pathname}`)
+      ? getInitialHistoryForPath(
+          prependSlash(`${attachWebURLOn}${location.pathname}`)
+        )
       : initialHistory || defaultNestedHistory
   );
-  const historyRef = useRef<BrowserHistory>();
-
-  if (Platform.OS === "web") {
-    if (historyRef.current == null) {
-      historyRef.current = createBrowserHistory({ window });
-    }
-  }
-  const webHistory = historyRef.current;
 
   const attemptGo = useCallback(
     (config?: {
@@ -59,50 +55,33 @@ const useNestedHistory = ({
     [history]
   );
 
-  useLayoutEffect(
-    () =>
-      webHistory?.listen((evt) => {
-        const newLocation = { ...evt.location };
-        newLocation.pathname = `${webURLRootPrefix}${newLocation.pathname.replace(
-          "/*",
-          ""
-        )}`;
-        setHistory((h) => {
-          const historyAfterRootReset = resetPrefix(h, webURLRootPrefix);
-          return pushLocationToHistory(historyAfterRootReset, newLocation);
-        });
-      }),
-    [webHistory, attemptGo, webURLRootPrefix]
-  );
+  const { navigate: webNavigate } = useWebIntegration({
+    setHistory,
+    go: attemptGo,
+    attachWebURLOn,
+  });
+
+  const getNavigateAction =
+    (replace?: boolean) => (to: To, state?: unknown) => {
+      setHistory((h) => pushLocationToHistory(h, to, replace, state));
+      webNavigate(
+        replace,
+        getHistoryForPrefix(
+          pushLocationToHistory(history, to, replace, state),
+          attachWebURLOn || "/"
+        ).at(-1),
+        state
+      );
+    };
 
   return {
     location: getLocationFromHistory(history),
     history,
-    go: (config?: any) => {
+    go: (config?: GoConfig) => {
       return attemptGo(config);
     },
-    push: (to: To, state?: unknown) => {
-      setHistory((h) => pushLocationToHistory(h, to, false, state));
-      if (Platform.OS === "web") {
-        window.history.pushState(
-          { history },
-          null,
-          (to as any).pathname.slice(webURLRootPrefix.length) +
-            (to as any).search
-        );
-      }
-    },
-    replace: (to: To, state?: unknown) => {
-      setHistory((h) => pushLocationToHistory(h, to, true, state));
-      if (Platform.OS === "web") {
-        window.history.replaceState(
-          { history },
-          null,
-          (to as any).pathname.slice(webURLRootPrefix.length) +
-            (to as any).search
-        );
-      }
-    },
+    push: getNavigateAction(false),
+    replace: getNavigateAction(true),
     removePrefix: (prefix: string) =>
       setHistory((h) => removePrefix(h, prefix)),
     resetPrefix: (prefix: string) => setHistory((h) => resetPrefix(h, prefix)),

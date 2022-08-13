@@ -2,13 +2,6 @@ import { vi, beforeEach, afterEach, test, expect, describe } from "vitest";
 
 import * as nativeHistory from "../src/history/nativeHistory";
 
-vi.resetModules();
-vi.mock("../src/history/nativeHistory", async () => {
-  const axios = await vi.importActual("../src/history/nativeHistory");
-
-  return { ...axios, createKey: vi.fn() };
-});
-
 const { getInitialHistoryForPath } = nativeHistory;
 
 // beforeEach(() => {
