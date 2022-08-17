@@ -1,6 +1,6 @@
 {
   "name": "react-native-url-router",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A url based native navigation for react-native apps. Designed to integrate react-router and react-native-screens.",
   "main": "dist/index.js",
   "homepage": "https://github.com/software-mansion-labs/react-native-url-router#readme",
