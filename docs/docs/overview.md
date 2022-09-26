@@ -4,9 +4,17 @@ sidebar_position: 1
 
 # Overview
 
-If you're familiar with [React Router](https://reactrouter.com/docs/en/v6/getting-started/overview), this page serves as a quick introduction to React Native Url Router.
+React Native Url Router aims to simplify native navigation patterns.
 
-It aims to mirror the overview page of React Router, with minimal explanations and lots of code.
+It allows for native navigation UI that feels natural on mobile together with easy navigation by opening URLs.
+
+It exports Stack and Tab Navigators same as react-navigation, but they are usually closely mapped with an app-wide URL structure.
+
+Being designed to work seamlessly with react-router and it should feel immidiately intuitive to people who used react-router on web.
+
+React Router provides the routing logic, route ranking, matching, params support and more.
+
+React Native Url Router provides a powerful new abstraction over a regular web history stack. It also integrates with react-native-screens providing a fully native stack behavior, and relies on react-native-pager-view for swipeable Tabs.
 
 ## Installation
 
@@ -155,29 +163,41 @@ loggedIn ? (
 ```
 
 ## Styling Tabs
-
-Tabs can be styled by providing a `tabsConfig` prop to the TabNavigator.
+Tabs can be styled by providing `title` and `icon` props to the inner `<Route>` components.
 
 ```tsx
-const mainTabsConfig = {
-  feed: {
-    title: "My feed"
-    icon: ({active, color, size}) => <FeedIcon active={active} color={color} size={size} />
-  },
-  profile: {
-    title: "My profile"
-    icon: ({active, color, size}) => <ProfileIcon active={active} color={color} size={size} />
-  },
-};
+const booksIcon = ({ size, active }) => (
+  <Text style={{ fontSize: size }}>{active ? "📕" : "📓"}</Text>
+);
+const profileIcon = ({ size, active }) => (
+  <Text style={{ fontSize: size }}>{active ? "🌟" : "⭐️"}</Text>
+);
 
-<TabNavigator tabsConfig={mainTabsConfig}>
+return <TabNavigator>
+  <Route
+    path="book"
+    element={
+      <ScrollView>
+        <BookScreen />
+      </ScrollView>
+    }
+    title="Last read"
+    icon={booksIcon}
+  />
+  <Route
+    path="profile"
+    element={<ProfileScreen />}
+    title="Your profile"
+    icon={profileIcon}
+  />
+</TabNavigator>
 ```
 
 If you need more styling options you can override the BottomTabsComponent according to the API docs.
 Additional props passed in tabConfig will be provided to the custom tabs component.
 Check the [DefaultBottomTabs](https://github.com/software-mansion-labs/react-native-url-router/blob/main/src/components/DefaultBottomTabs.tsx) implementation for details.
 
-```tsx
+<!-- ```tsx
 const myTabsConfig = {
   feed: {
     title: "My feed"
@@ -189,11 +209,11 @@ const myTabsConfig = {
   },
 };
 <TabNavigator BottomTabsComponent={MyBottomTabs} tabsConfig={myTabsConfig}>
-```
+``` -->
 
 ## Styling the Stack Navigator
 
-Stack Navigator can be styled by providing defaultScreenConfig or screensConfig props. When configuration for a specific path is not provided in the screensConfig under a correct key, the default one is used as fallback. These configurations are shallow merged.
+Stack Navigator can be styled by providing `stackHeaderConfig`, `containerStyle` and `stackConfig` props to child `<Route>` components. You can also set `defaultScreenConfig` on the StackNavigator to set default screen props. These configurations are shallow merged with props for each route.
 
 ```tsx
 const screensConfig = {
@@ -212,7 +232,7 @@ const defaultScreenConfig = { title: "Other screens" }
 
 There's a bit more to explain here.
 
-The `containerStyle` is a regular styles prop passed onto the root container.
+The `containerStyle` is a regular `styles` prop passed onto the root container.
 
 The `stackConfig` defines customization options from `react-native-screens` passed onto the native ScreenStack.
 [Read this props list](https://github.com/software-mansion/react-native-screens/blob/main/guides/GUIDE_FOR_LIBRARY_AUTHORS.md#screenstack) for details.
@@ -253,6 +273,16 @@ TODO
 
 If you need to show two different navigation layers, it's best to use the `<On path="/pathPrefix">` component and render your modal based on a separate nested history prefix. You can create links to both modals and screens, add screens to modals and more.
 
-If you need to conditionally render same content as either a modal or a stack screen (like opening a modal from the app or a stack screen if linked to), you can modify the incoming link to a different prefix.
+For example, you can use `/root` and `/modals` paths to create two separate navigation trees. Use `/root` as the main navigation root and keep it synced with the web URL by setting `attachWebURLOn="/root"` on the `<NativeRouter>` component.
 
-(I'm still figuring this out, so just reach out to me on twitter @aleqsio if you want to use this)
+You can think of this behavior as layers. Modals can be shown on top of the main navigation (your stacks and tabs). You can use absolute links to open modals (like this: `<Link to="/modal/book">`). Use `useMatch` from react-router to check if the modal should show.
+
+# Initial history
+
+If you need the navigation to start on a specific screen, set the `<NativeRouter>`'s `initialHistory` prop.
+
+ `<NativeRouter initialHistory={getInitialHistoryForPath("/root/login")}>`
+
+## Web
+
+The package should work out of the box on the web, when used with react-native-web or expo.

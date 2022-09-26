@@ -4,10 +4,8 @@ import { Link } from "react-native-url-router";
 
 const BookScreen: FC = () => {
   return (
-    <View style={{ padding: 30 }}>
-      <Text style={{ fontSize: 20, marginBottom: 20 }}>
-        {"Last read book:"}
-      </Text>
+    <View style={{ padding: 30, minHeight: 2000 }}>
+      <Text style={{ fontSize: 20, marginBottom: 20 }}>Last read book:</Text>
       <View
         style={{
           backgroundColor: "#22f",
@@ -22,17 +20,23 @@ const BookScreen: FC = () => {
           },
           shadowOpacity: 0.43,
           shadowRadius: 9.51,
-
           elevation: 15,
         }}
       >
-        <Text style={{ fontSize: 50, marginBottom: 40, color: "white",textAlign:"center",  }}>
-          {"Odyssey"}
+        <Text
+          style={{
+            fontSize: 50,
+            marginBottom: 40,
+            color: "white",
+            textAlign: "center",
+          }}
+        >
+          Odyssey
         </Text>
-        <Text style={{ fontSize: 150, textAlign:"center", marginBottom:50 }}>
-          {"⚓️"}
+        <Text style={{ fontSize: 150, textAlign: "center", marginBottom: 50 }}>
+          ⚓️
         </Text>
-        <Text style={{ fontSize: 20, color: "white" }}>{"Homer"}</Text>
+        <Text style={{ fontSize: 20, color: "white" }}>Homer</Text>
       </View>
       <Link to="/modal/book">
         <View
@@ -51,7 +55,7 @@ const BookScreen: FC = () => {
               fontSize: 14,
             }}
           >
-            {"Continue reading"}
+            Continue reading
           </Text>
         </View>
       </Link>

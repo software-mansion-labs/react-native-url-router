@@ -1,20 +1,17 @@
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { StatusBar } from "expo-status-bar";
-import { atom, useAtom } from "jotai";
-import React, { Children, FC, useState } from "react";
-import { LogBox, StyleSheet, Text, View, YellowBox } from "react-native";
+import { useAtom } from "jotai";
+import React, { FC } from "react";
+import { LogBox, ScrollView, StyleSheet, Text } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   NativeRouter,
   NavigateIfFocused,
-  On,
   StackNavigator,
   TabNavigator,
-  useNestedHistoryContext,
   getInitialHistoryForPath,
   Route,
 } from "react-native-url-router";
-import { Navigate, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import BookReservationModal from "./BookReservationModal";
 import BookScreen from "./BookScreen";
 import LoginScreen, { SessionAtom } from "./LoginScreen";
@@ -66,11 +63,6 @@ export default function App() {
   );
 }
 
-
-
-
-
-
 const AppRouter = () => (
   <NativeRouter
     initialHistory={getInitialHistoryForPath("/root/login")}
@@ -87,7 +79,11 @@ const AppRouter = () => (
             <TabNavigator>
               <Route
                 path="book"
-                element={<BookScreen />}
+                element={
+                  <ScrollView>
+                    <BookScreen />
+                  </ScrollView>
+                }
                 title="Last read"
                 icon={booksIcon}
               />
@@ -105,11 +101,6 @@ const AppRouter = () => (
     <BookReservationModal />
   </NativeRouter>
 );
-
-
-
-
-
 
 const styles = StyleSheet.create({
   container: {
