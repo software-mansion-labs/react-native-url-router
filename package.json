@@ -24,12 +24,12 @@
     "package.json"
   ],
   "peerDependencies": {
-    "history": "6",
+    "history": "^5.3.0",
     "react": "*",
     "react-native": "*",
-    "react-native-pager-view": "5",
-    "react-native-screens": "3",
-    "react-router": "6"
+    "react-native-pager-view": "^6.1.2",
+    "react-native-screens": "^3.18.2",
+    "react-router": "^6.6.1"
   },
   "devDependencies": {
     "@types/jest": "^28.1.4",
